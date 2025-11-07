@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "name": "Sarah Johnson",
+    "role": "Kare Giver",
+    "specialization": "Elderly Care",
+    "status": "Active",
+    "patients": "12",
+    "rating": "4.8",
+    "experience": "8 years"
+  },
+  {
+    "id": 2,
+    "name": "Michael Chen",
+    "role": "Kare Giver",
+    "specialization": "Physical Therapy",
+    "status": "Active",
+    "patients": "8",
+    "rating": "4.9",
+    "experience": "5 years"
+  },
+  {
+    "id": 3,
+    "name": "Emily Rodriguez",
+    "role": "Kare Giver",
+    "specialization": "Pediatric Care",
+    "status": "On Leave",
+    "patients": "0",
+    "rating": "4.7",
+    "experience": "6 years"
+  },
+  {
+    "id": 4,
+    "name": "David Thompson",
+    "role": "Kare Giver",
+    "specialization": "Mental Health",
+    "status": "Active",
+    "patients": "15",
+    "rating": "4.6",
+    "experience": "10 years"
+  },
+  {
+    "id": 5,
+    "name": "Lisa Wang",
+    "role": "Kare Receiver",
+    "condition": "Post-Surgery Recovery",
+    "status": "In Treatment",
+    "caregiver": "Sarah Johnson",
+    "admittedDate": "2024-10-15",
+    "age": "68"
+  },
+  {
+    "id": 6,
+    "name": "Robert Martinez",
+    "role": "Kare Receiver",
+    "condition": "Chronic Pain Management",
+    "status": "In Treatment",
+    "caregiver": "Michael Chen",
+    "admittedDate": "2024-09-20",
+    "age": "55"
+  },
+  {
+    "id": 7,
+    "name": "Jennifer Lee",
+    "role": "Kare Viewer",
+    "relation": "Family Member",
+    "status": "Active",
+    "monitoring": "Lisa Wang",
+    "accessLevel": "Full",
+    "lastAccess": "2024-11-06"
+  },
+  {
+    "id": 8,
+    "name": "Dr. James Wilson",
+    "role": "Kare Admin",
+    "department": "Medical Director",
+    "status": "Active",
+    "permissions": "Full Access",
+    "employeeId": "ADM001",
+    "experience": "15 years"
+  }
+]
