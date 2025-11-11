@@ -6,17 +6,16 @@ import Container from "@/components/layout/container"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   IconPlus,
   IconSearch,
   IconEdit,
   IconTrash,
-  IconShieldCheck,
   IconMail,
   IconPhone,
   IconCalendar,
   IconUser,
+  IconMapPin,
 } from "@tabler/icons-react"
 import {
   Dialog,
@@ -30,57 +29,72 @@ import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
 
 // Mock data
-const mockAdmins = [
+const mockGivers = [
   {
     id: 1,
-    firstName: "Vik",
+    firstName: "Monica",
     middleName: "",
-    lastName: "Sharma",
-    email: "mkkaregiver@gmail.com",
-    mobile: "4287653109",
-    addressLine1: "33 Wood Avenue South Suite 600",
-    addressLine2: "Iselin, NJ, 08830",
-    city: "Iselin",
-    state: "NEW JERSEY",
-    zipCode: "08830",
+    lastName: "R",
+    email: "mirasbabygirl@gmail.com",
+    mobile: "7327180652",
+    addressLine1: "123 Main Street",
+    addressLine2: "Apt 4B",
+    city: "New York",
+    state: "NY",
+    zipCode: "10001",
     country: "United States",
     notes: "",
     createdDate: "12/24/2023",
-    status: "Active",
+  },
+  {
+    id: 2,
+    firstName: "Kristin",
+    middleName: "",
+    lastName: "P",
+    email: "policastrokristin@gmail.com",
+    mobile: "7327662727",
+    addressLine1: "456 Oak Avenue",
+    addressLine2: "",
+    city: "Los Angeles",
+    state: "CA",
+    zipCode: "90001",
+    country: "United States",
+    notes: "",
+    createdDate: "12/24/2023",
   },
 ]
 
-export default function KareAdminsPage() {
+export default function KareGiversPage() {
   const router = useRouter()
-  const [admins] = useState(mockAdmins)
+  const [givers] = useState(mockGivers)
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedAdmin, setSelectedAdmin] = useState<number | null>(null)
+  const [selectedGiver, setSelectedGiver] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredAdmins = admins.filter((admin) => {
-    const fullName = `${admin.firstName} ${admin.middleName} ${admin.lastName}`.toLowerCase()
+  const filteredGivers = givers.filter((giver) => {
+    const fullName =
+      `${giver.firstName} ${giver.middleName} ${giver.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
       fullName.includes(query) ||
-      admin.email.toLowerCase().includes(query) ||
-      admin.mobile.includes(query)
+      giver.email.toLowerCase().includes(query) ||
+      giver.mobile.includes(query)
     )
   })
 
   const handleDelete = (id: number) => {
-    setSelectedAdmin(id)
+    setSelectedGiver(id)
     setDeleteDialogOpen(true)
   }
 
   const confirmDelete = () => {
-    // Delete logic here
-    console.log("Deleting admin:", selectedAdmin)
+    console.log("Deleting giver:", selectedGiver)
     setDeleteDialogOpen(false)
-    setSelectedAdmin(null)
+    setSelectedGiver(null)
   }
 
-  const columns: ColumnDef<(typeof mockAdmins)[0]>[] = [
+  const columns: ColumnDef<(typeof mockGivers)[0]>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
@@ -103,15 +117,6 @@ export default function KareAdminsPage() {
       cell: (row) => `${row.city}, ${row.state}`,
     },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: (row) => (
-        <Badge variant={row.status === "Active" ? "default" : "secondary"}>
-          {row.status}
-        </Badge>
-      ),
-    },
-    {
       accessorKey: "createdDate",
       header: "Created Date",
     },
@@ -124,7 +129,7 @@ export default function KareAdminsPage() {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              router.push(`/kare-admins/edit/${row.id}`)
+              router.push(`/kare-givers/edit/${row.id}`)
             }}
           >
             <IconEdit className="h-4 w-4" />
@@ -152,15 +157,17 @@ export default function KareAdminsPage() {
         <div className="flex flex-col gap-4 px-4 lg:px-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Kare Admins</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Kare Givers
+              </h1>
               <p className="text-muted-foreground">
-                Manage administrator accounts and permissions
+                Manage caregiver profiles and information
               </p>
             </div>
             <div className="flex items-center gap-2">
               <ViewToggle view={view} onViewChange={setView} />
               <Button
-                onClick={() => router.push("/kare-admins/add")}
+                onClick={() => router.push("/kare-givers/add")}
                 className="gap-2"
               >
                 <IconPlus className="h-4 w-4" />
@@ -186,8 +193,8 @@ export default function KareAdminsPage() {
           <div className="px-4 lg:px-6">
             <DataTable
               columns={columns}
-              data={filteredAdmins}
-              onRowClick={(row) => router.push(`/kare-admins/edit/${row.id}`)}
+              data={filteredGivers}
+              onRowClick={(row) => router.push(`/kare-givers/edit/${row.id}`)}
             />
           </div>
         )}
@@ -195,21 +202,11 @@ export default function KareAdminsPage() {
         {/* Card View */}
         {view === "card" && (
           <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-            {filteredAdmins.map((admin) => (
+            {filteredGivers.map((giver) => (
             <Card
-              key={admin.id}
+              key={giver.id}
               className="group relative overflow-hidden transition-all hover:shadow-lg"
             >
-              {/* Status Badge */}
-              <div className="absolute right-4 top-4 z-10">
-                <Badge
-                  variant={admin.status === "Active" ? "default" : "secondary"}
-                  className="shadow-sm"
-                >
-                  {admin.status}
-                </Badge>
-              </div>
-
               <CardContent className="p-6">
                 {/* Profile Section */}
                 <div className="mb-4 flex items-start gap-4">
@@ -218,11 +215,13 @@ export default function KareAdminsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-xl font-semibold">
-                      {admin.firstName} {admin.middleName} {admin.lastName}
+                      {giver.firstName} {giver.middleName} {giver.lastName}
                     </h3>
                     <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
-                      <IconShieldCheck className="h-4 w-4" />
-                      <span>Administrator</span>
+                      <IconMapPin className="h-4 w-4" />
+                      <span className="truncate">
+                        {giver.city}, {giver.state}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -231,16 +230,16 @@ export default function KareAdminsPage() {
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex items-center gap-3">
                     <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="truncate text-sm">{admin.email}</span>
+                    <span className="truncate text-sm">{giver.email}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-sm">{admin.mobile}</span>
+                    <span className="text-sm">{giver.mobile}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                     <span className="text-muted-foreground text-sm">
-                      Created: {admin.createdDate}
+                      Created: {giver.createdDate}
                     </span>
                   </div>
                 </div>
@@ -251,7 +250,9 @@ export default function KareAdminsPage() {
                     variant="outline"
                     size="sm"
                     className="flex-1 gap-2"
-                    onClick={() => router.push(`/kare-admins/edit/${admin.id}`)}
+                    onClick={() =>
+                      router.push(`/kare-givers/edit/${giver.id}`)
+                    }
                   >
                     <IconEdit className="h-4 w-4" />
                     Edit
@@ -260,7 +261,7 @@ export default function KareAdminsPage() {
                     variant="outline"
                     size="sm"
                     className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={() => handleDelete(admin.id)}
+                    onClick={() => handleDelete(giver.id)}
                   >
                     <IconTrash className="h-4 w-4" />
                     Delete
@@ -273,24 +274,24 @@ export default function KareAdminsPage() {
         )}
 
         {/* Empty State */}
-        {filteredAdmins.length === 0 && view === "card" && (
+        {filteredGivers.length === 0 && view === "card" && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
-              <IconShieldCheck className="text-muted-foreground h-10 w-10" />
+              <IconUser className="text-muted-foreground h-10 w-10" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold">No admins found</h3>
+            <h3 className="mt-4 text-lg font-semibold">No givers found</h3>
             <p className="text-muted-foreground mt-2 text-sm">
               {searchQuery
                 ? "Try adjusting your search query"
-                : "Get started by adding a new admin"}
+                : "Get started by adding a new caregiver"}
             </p>
             {!searchQuery && (
               <Button
-                onClick={() => router.push("/kare-admins/add")}
+                onClick={() => router.push("/kare-givers/add")}
                 className="mt-4 gap-2"
               >
                 <IconPlus className="h-4 w-4" />
-                Add New Admin
+                Add New Giver
               </Button>
             )}
           </div>
@@ -301,10 +302,10 @@ export default function KareAdminsPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Admin</DialogTitle>
+            <DialogTitle>Delete Caregiver</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this admin? This action cannot be
-              undone.
+              Are you sure you want to delete this caregiver? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

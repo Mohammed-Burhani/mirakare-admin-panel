@@ -15,13 +15,15 @@ import {
   IconX,
   IconUser,
   IconPhone,
-  IconMail,
   IconMapPin,
   IconNotes,
+  IconEye,
 } from "@tabler/icons-react"
 
 // Validation Schema
 const validationSchema = Yup.object({
+  recipient: Yup.string().required("Recipient is required"),
+  relationship: Yup.string().required("Relationship is required"),
   firstName: Yup.string()
     .required("First name is required")
     .min(2, "First name must be at least 2 characters"),
@@ -30,25 +32,25 @@ const validationSchema = Yup.object({
     .required("Last name is required")
     .min(2, "Last name must be at least 2 characters"),
   mobile: Yup.string()
-    .required("Mobile number is required")
-    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits"),
+    .required("Mobile is required")
+    .matches(/^[0-9]{10}$/, "Mobile must be 10 digits"),
   email: Yup.string()
     .required("Email is required")
     .email("Invalid email address"),
-  addressLine1: Yup.string().required("Address line 1 is required"),
+  addressLine1: Yup.string(),
   addressLine2: Yup.string(),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  zipCode: Yup.string()
-    .required("Zip code is required")
-    .matches(/^[0-9]{5}$/, "Zip code must be 5 digits"),
-  country: Yup.string().required("Country is required"),
+  city: Yup.string(),
+  state: Yup.string(),
+  zipCode: Yup.string().matches(/^[0-9]{5}$/, "Zip code must be 5 digits"),
+  country: Yup.string(),
   notes: Yup.string(),
 })
 
-interface KareAdminFormProps {
+interface KareViewerFormProps {
   mode: "add" | "edit"
   initialValues?: {
+    recipient: string
+    relationship: string
     firstName: string
     middleName: string
     lastName: string
@@ -65,6 +67,8 @@ interface KareAdminFormProps {
 }
 
 const defaultValues = {
+  recipient: "",
+  relationship: "",
   firstName: "",
   middleName: "",
   lastName: "",
@@ -79,13 +83,12 @@ const defaultValues = {
   notes: "",
 }
 
-export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
+export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
   const router = useRouter()
 
   const handleSubmit = (values: typeof defaultValues) => {
     console.log("Form submitted:", values)
-    // Add your submit logic here
-    router.push("/kare-admins")
+    router.push("/kare-viewers")
   }
 
   return (
@@ -102,12 +105,14 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {mode === "add" ? "Add New Kare Admin" : "Edit Kare Admin"}
+            {mode === "add"
+              ? "Add New Viewer Account"
+              : "Edit Viewer Account"}
           </h1>
           <p className="text-muted-foreground">
             {mode === "add"
-              ? "Create a new administrator account"
-              : "Update administrator information"}
+              ? "Create a new viewer profile"
+              : "Update viewer information"}
           </p>
         </div>
       </div>
@@ -119,12 +124,70 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
         enableReinitialize
       >
         {({ isSubmitting, dirty, resetForm }) => (
-          <Form className="flex flex-col gap-6">
-            {/* Profile Information Card - Always Visible */}
+          <Form className="space-y-6">
+            {/* Recipient & Relationship Card - Always Visible */}
             <FormSectionCard
-              title="Profile Information"
+              title="Recipient"
+              icon={IconEye}
+              description="Select recipient and relationship (* Required fields)"
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="recipient">
+                    Recipient <span className="text-destructive">*</span>
+                  </Label>
+                  <Field
+                    as="select"
+                    name="recipient"
+                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Select Recipient</option>
+                    <option value="Mira Sharma">Mira Sharma</option>
+                    <option value="John Doe">John Doe</option>
+                    <option value="Jane Smith">Jane Smith</option>
+                  </Field>
+                  <ErrorMessage
+                    name="recipient"
+                    component="p"
+                    className="text-destructive text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="relationship">
+                    Relationship <span className="text-destructive">*</span>
+                  </Label>
+                  <Field
+                    as="select"
+                    name="relationship"
+                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Select Relationship</option>
+                    <option value="Father">Father</option>
+                    <option value="Mother">Mother</option>
+                    <option value="Son">Son</option>
+                    <option value="Daughter">Daughter</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Grandparent">Grandparent</option>
+                    <option value="Grandchild">Grandchild</option>
+                    <option value="Friend">Friend</option>
+                    <option value="Other">Other</option>
+                  </Field>
+                  <ErrorMessage
+                    name="relationship"
+                    component="p"
+                    className="text-destructive text-sm"
+                  />
+                </div>
+              </div>
+            </FormSectionCard>
+
+            {/* Name Information Card - Always Visible */}
+            <FormSectionCard
+              title="Name"
               icon={IconUser}
-              description="Basic account details (* Required fields)"
+              description="Viewer name details (* Required fields)"
             >
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
@@ -178,18 +241,14 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
               sections={[
                 {
                   id: "contact",
-                  title: "Contact Information",
+                  title: "Mobile",
                   icon: IconPhone,
-                  description: "Email and phone details",
+                  description: "Mobile and email details",
                   defaultOpen: true,
                   content: (
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="mobile"
-                          className="flex items-center gap-2"
-                        >
-                          <IconPhone className="h-4 w-4" />
+                        <Label htmlFor="mobile">
                           Mobile <span className="text-destructive">*</span>
                         </Label>
                         <Field
@@ -206,11 +265,7 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="email"
-                          className="flex items-center gap-2"
-                        >
-                          <IconMail className="h-4 w-4" />
+                        <Label htmlFor="email">
                           Email <span className="text-destructive">*</span>
                         </Label>
                         <Field
@@ -237,20 +292,12 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                   content: (
                     <div className="grid gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="addressLine1">
-                          Address Line 1{" "}
-                          <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="addressLine1">Address Line 1</Label>
                         <Field
                           name="addressLine1"
                           type="text"
                           placeholder="Address Line 1"
                           className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <ErrorMessage
-                          name="addressLine1"
-                          component="p"
-                          className="text-destructive text-sm"
                         />
                       </div>
 
@@ -266,43 +313,27 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
 
                       <div className="grid gap-4 md:grid-cols-4">
                         <div className="space-y-2">
-                          <Label htmlFor="city">
-                            City <span className="text-destructive">*</span>
-                          </Label>
+                          <Label htmlFor="city">City</Label>
                           <Field
                             name="city"
                             type="text"
                             placeholder="City"
                             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           />
-                          <ErrorMessage
-                            name="city"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="state">
-                            State <span className="text-destructive">*</span>
-                          </Label>
+                          <Label htmlFor="state">State</Label>
                           <Field
                             name="state"
                             type="text"
                             placeholder="State"
                             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           />
-                          <ErrorMessage
-                            name="state"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">
-                            Zipcode <span className="text-destructive">*</span>
-                          </Label>
+                          <Label htmlFor="zipCode">Zipcode</Label>
                           <Field
                             name="zipCode"
                             type="text"
@@ -317,19 +348,12 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="country">
-                            Country <span className="text-destructive">*</span>
-                          </Label>
+                          <Label htmlFor="country">Country</Label>
                           <Field
                             name="country"
                             type="text"
                             placeholder="Country"
                             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
-                          <ErrorMessage
-                            name="country"
-                            component="p"
-                            className="text-destructive text-sm"
                           />
                         </div>
                       </div>
@@ -340,15 +364,15 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                   id: "notes",
                   title: "Notes",
                   icon: IconNotes,
-                  description: "Additional information and comments",
+                  description: "General notes and observations",
                   defaultOpen: false,
                   content: (
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Additional Information</Label>
+                      <Label htmlFor="notes">Additional Notes</Label>
                       <Field
                         as="textarea"
                         name="notes"
-                        placeholder="Add any additional notes or information..."
+                        placeholder="Add any additional notes..."
                         rows={4}
                         className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       />
@@ -370,7 +394,7 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                 className="gap-2"
               >
                 <IconX className="h-4 w-4" />
-                Cancel
+                Back
               </Button>
               <Button
                 type="button"

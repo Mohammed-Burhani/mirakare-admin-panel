@@ -167,10 +167,10 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card border-primary/20 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-primary">Vitals Summary</CardTitle>
+        <CardTitle className="text-primary">Vitals</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Patient vital signs monitoring
+            Virals Monitored & aggregated in last 7 days
           </span>
           <span className="@[540px]/card:hidden">Vitals monitoring</span>
         </CardDescription>

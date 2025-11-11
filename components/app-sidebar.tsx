@@ -4,21 +4,19 @@ import * as React from "react"
 import {
   IconActivity,
   IconAddressBook,
-  IconChartLine,
+  // IconChartLine,
   IconDashboard,
   IconHelp,
   IconId,
-  IconInnerShadowTop,
   IconSearch,
   IconSettings,
   IconShieldCheck,
+  IconTrendingUp,
   IconUserHeart,
   IconUserPlus,
-  IconUsers,
   IconUsersGroup,
 } from "@tabler/icons-react"
-
-import { NavDocuments } from "@/components/nav-documents"
+// import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -31,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
 
 const data = {
   user: {
@@ -74,26 +73,31 @@ const data = {
       url: "/contacts",
       icon: IconAddressBook,
     },
+    {
+      title: "Reports",
+      url: "/reports",
+      icon: IconTrendingUp,
+    },
   ],
-  navReports: {
-    title: "Reports",
-    icon: IconChartLine,
-    url: "#",
-    items: [
-      {
-        title: "Vital Stats",
-        url: "/reports/vital-stats",
-      },
-      {
-        title: "Care Summary",
-        url: "/reports/care-summary",
-      },
-      {
-        title: "Activity Logs",
-        url: "/reports/activity-logs",
-      },
-    ],
-  },
+  // navReports: {
+  //   title: "Reports",
+  //   icon: IconChartLine,
+  //   url: "#",
+  //   items: [
+  //     {
+  //       title: "Vital Stats",
+  //       url: "/reports/vital-stats",
+  //     },
+  //     {
+  //       title: "Care Summary",
+  //       url: "/reports/care-summary",
+  //     },
+  //     {
+  //       title: "Activity Logs",
+  //       url: "/reports/activity-logs",
+  //     },
+  //   ],
+  // },
   navSecondary: [
     {
       title: "Settings",
@@ -121,19 +125,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:p-1.5! bg-muted border"
             >
-              <a href="/">
-                <IconActivity className="!size-5 text-primary" />
+              <Link href="/">
+                <IconActivity className="size-5! text-primary" />
                 <span className="text-base font-semibold">MiraKare</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.navReports.items} />
+        {/* <NavDocuments items={data.navReports.items} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
