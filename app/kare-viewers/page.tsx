@@ -16,7 +16,7 @@ import {
   IconPhone,
   IconCalendar,
   IconUser,
-  IconMapPin,
+
   IconEye,
   IconLoader,
 } from "@tabler/icons-react"
@@ -33,6 +33,18 @@ import { ViewToggle } from "@/components/view-toggle"
 import { useKareViewers } from "@/lib/hooks/useKareViewers"
 import { toast } from "sonner"
 
+interface Viewer {
+  id: number
+  recipientId: number
+  recipient: string | null
+  name: string
+  email: string
+  mobile: string
+  subscriber: string | null
+  createdDate: string
+  additionalRole: string | null
+}
+
 export default function KareViewersPage() {
   const router = useRouter()
   const { data: viewers = [], isLoading, error, deleteKareViewer } = useKareViewers()
@@ -41,16 +53,14 @@ export default function KareViewersPage() {
   const [selectedViewer, setSelectedViewer] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredViewers = viewers.filter((viewer: any) => {
-    const fullName =
-      `${viewer.firstName} ${viewer.middleName || ''} ${viewer.lastName}`.toLowerCase()
+  const filteredViewers = (viewers as Viewer[]).filter((viewer) => {
     const query = searchQuery.toLowerCase()
     return (
-      fullName.includes(query) ||
+      (viewer.name && viewer.name.toLowerCase().includes(query)) ||
       (viewer.email && viewer.email.toLowerCase().includes(query)) ||
       (viewer.mobile && viewer.mobile.includes(query)) ||
       (viewer.recipient && viewer.recipient.toLowerCase().includes(query)) ||
-      (viewer.relation && viewer.relation.toLowerCase().includes(query))
+      (viewer.subscriber && viewer.subscriber.toLowerCase().includes(query))
     )
   })
 
@@ -83,24 +93,20 @@ export default function KareViewersPage() {
     )
   }
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Viewer>[] = [
     {
-      accessorKey: "firstName",
+      accessorKey: "name",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {row.firstName} {row.middleName} {row.lastName}
+          {row.name}
         </div>
       ),
     },
     {
       accessorKey: "recipient",
       header: "Recipient",
-    },
-    {
-      accessorKey: "relationship",
-      header: "Relationship",
-      cell: (row) => <Badge variant="secondary">{row.relationship}</Badge>,
+      cell: (row) => row.recipient || 'N/A',
     },
     {
       accessorKey: "email",
@@ -111,12 +117,14 @@ export default function KareViewersPage() {
       header: "Mobile",
     },
     {
-      header: "Location",
-      cell: (row) => `${row.city}, ${row.state}`,
+      accessorKey: "subscriber",
+      header: "Subscriber",
+      cell: (row) => row.subscriber || 'N/A',
     },
     {
       accessorKey: "createdDate",
       header: "Created Date",
+      cell: (row) => new Date(row.createdDate).toLocaleDateString(),
     },
     {
       header: "Actions",
@@ -137,7 +145,7 @@ export default function KareViewersPage() {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleDelete(row.id)
+              handleDelete(row.id.toString())
             }}
             className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
@@ -178,7 +186,7 @@ export default function KareViewersPage() {
           <div className="relative">
             <IconSearch className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
-              placeholder="Search by name, email, mobile, recipient, or relationship..."
+              placeholder="Search by name, email, mobile, recipient, or subscriber..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -218,15 +226,15 @@ export default function KareViewersPage() {
               </div>
             ) : (
               <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-                {filteredViewers.map((viewer: unknown) => (
+                {filteredViewers.map((viewer) => (
               <Card
                 key={viewer.id}
                 className="group relative overflow-hidden transition-all hover:shadow-lg"
               >
-                {/* Relationship Badge */}
+                {/* Recipient Badge */}
                 <div className="absolute right-4 top-4 z-10">
                   <Badge variant="secondary" className="shadow-sm">
-                    {viewer.relationship}
+                    {viewer.recipient || 'No Recipient'}
                   </Badge>
                 </div>
 
@@ -238,7 +246,7 @@ export default function KareViewersPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-xl font-semibold">
-                        {viewer.firstName} {viewer.middleName || ''} {viewer.lastName}
+                        {viewer.name}
                       </h3>
                       <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                         <IconUser className="h-4 w-4" />
@@ -255,18 +263,18 @@ export default function KareViewersPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                      <span className="text-sm">{viewer.mobile || viewer.phoneNumber || 'N/A'}</span>
+                      <span className="text-sm">{viewer.mobile || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <IconMapPin className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <IconUser className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground truncate text-sm">
-                        {viewer.city || 'N/A'}, {viewer.state || 'N/A'}
+                        Subscriber: {viewer.subscriber || 'N/A'}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground text-sm">
-                        Created: {viewer.createdDate || new Date(viewer.createdAt).toLocaleDateString()}
+                        Created: {new Date(viewer.createdDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -288,7 +296,7 @@ export default function KareViewersPage() {
                       variant="outline"
                       size="sm"
                       className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleDelete(viewer.id)}
+                      onClick={() => handleDelete(viewer.id.toString())}
                     >
                       <IconTrash className="h-4 w-4" />
                       Delete

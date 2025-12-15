@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
+import { CreateKareViewerRequest } from '../api/types'
 
 export const useKareViewers = () => {
   const queryClient = useQueryClient()
@@ -12,14 +13,14 @@ export const useKareViewers = () => {
   })
 
   const createKareViewer = useMutation({
-    mutationFn: apiClient.createKareViewer,
+    mutationFn: (data: CreateKareViewerRequest) => apiClient.createKareViewer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kare-viewers'] })
     }
   })
 
   const updateKareViewer = useMutation({
-    mutationFn: ({ id, ...data }: { id: number } & any) => 
+    mutationFn: ({ id, ...data }: { id: number } & Partial<CreateKareViewerRequest>) => 
       apiClient.updateKareViewer(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kare-viewers'] })

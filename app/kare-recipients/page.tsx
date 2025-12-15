@@ -49,14 +49,13 @@ export default function KareRecipientsPage() {
   const [selectedRecipientName, setSelectedRecipientName] = useState("")
 
   const filteredRecipients = recipients.filter((recipient: any) => {
-    const fullName =
-      `${recipient.firstName} ${recipient.middleName || ''} ${recipient.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
-      fullName.includes(query) ||
+      (recipient.name && recipient.name.toLowerCase().includes(query)) ||
       (recipient.email && recipient.email.toLowerCase().includes(query)) ||
       (recipient.phone && recipient.phone.includes(query)) ||
-      (recipient.relationship && recipient.relationship.toLowerCase().includes(query))
+      (recipient.relationship && recipient.relationship.toLowerCase().includes(query)) ||
+      (recipient.subsciber && recipient.subsciber.toLowerCase().includes(query))
     )
   })
 
@@ -91,18 +90,18 @@ export default function KareRecipientsPage() {
 
   const columns: ColumnDef<unknown>[] = [
     {
-      accessorKey: "firstName",
+      accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
         <div className="font-medium">
-          {row.original.firstName} {row.original.middleName} {row.original.lastName}
+          {row.original.name}
         </div>
       ),
     },
     {
       accessorKey: "relationship",
       header: "Relationship",
-      cell: ({ row }) => <Badge variant="secondary">{row.original.relationship}</Badge>,
+      cell: ({ row }) => <Badge variant="secondary">{row.original.relationship || 'N/A'}</Badge>,
     },
     {
       accessorKey: "gender",
@@ -122,8 +121,22 @@ export default function KareRecipientsPage() {
       header: "Phone",
     },
     {
+      accessorKey: "subsciber",
+      header: "Subscriber",
+    },
+    {
+      accessorKey: "providerConnected",
+      header: "Provider",
+      cell: ({ row }) => (
+        <Badge variant={row.original.providerConnected ? "default" : "secondary"}>
+          {row.original.providerConnected ? "Connected" : "Not Connected"}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "createdDate",
       header: "Created Date",
+      cell: ({ row }) => new Date(row.original.createdDate).toLocaleDateString(),
     },
     {
       header: "Actions",
@@ -185,7 +198,7 @@ export default function KareRecipientsPage() {
           <div className="relative">
             <IconSearch className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
-              placeholder="Search by name, email, phone, or relationship..."
+              placeholder="Search by name, email, phone, relationship, or subscriber..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -220,10 +233,10 @@ export default function KareRecipientsPage() {
               key={recipient.id}
               className="group relative overflow-hidden transition-all hover:shadow-lg"
             >
-              {/* Relationship Badge */}
+              {/* Provider Status Badge */}
               <div className="absolute right-4 top-4 z-10">
-                <Badge variant="secondary" className="shadow-sm">
-                  {recipient.relationship}
+                <Badge variant={recipient.providerConnected ? "default" : "secondary"} className="shadow-sm">
+                  {recipient.providerConnected ? "Provider Connected" : "No Provider"}
                 </Badge>
               </div>
 
@@ -235,8 +248,7 @@ export default function KareRecipientsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-xl font-semibold">
-                      {recipient.firstName} {recipient.middleName}{" "}
-                      {recipient.lastName}
+                      {recipient.name}
                     </h3>
                     <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                       <IconHeartbeat className="h-4 w-4" />
@@ -251,38 +263,46 @@ export default function KareRecipientsPage() {
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex items-center gap-3">
                     <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="truncate text-sm">{recipient.email}</span>
+                    <span className="truncate text-sm">{recipient.email || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-sm">{recipient.phone}</span>
+                    <span className="text-sm">{recipient.phone || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconUsers className="text-muted-foreground h-4 w-4 shrink-0" />
                     <span className="text-muted-foreground truncate text-sm">
-                      Caregiver: {recipient.caregiver}
+                      Subscriber: {recipient.subsciber || 'N/A'}
                     </span>
                   </div>
+                  {recipient.relationship && (
+                    <div className="flex items-center gap-3">
+                      <IconUser className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="text-muted-foreground truncate text-sm">
+                        Relationship: {recipient.relationship}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3">
                     <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                     <span className="text-muted-foreground text-sm">
-                      Created: {recipient.createdDate}
+                      Created: {new Date(recipient.createdDate).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2 border-t pt-4">
-                  {!recipient.caregiver && (
+                  {!recipient.providerConnected && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        console.log("Assign caregiver for:", recipient.id)
+                        console.log("Connect provider for:", recipient.id)
                       }}
                     >
-                      Assign Caregiver
+                      Connect Provider
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-2">
@@ -290,9 +310,7 @@ export default function KareRecipientsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setSelectedRecipientName(
-                          `${recipient.firstName} ${recipient.lastName}`
-                        )
+                        setSelectedRecipientName(recipient.name)
                         setJournalingOpen(true)
                       }}
                     >
@@ -302,9 +320,7 @@ export default function KareRecipientsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setSelectedRecipientName(
-                          `${recipient.firstName} ${recipient.lastName}`
-                        )
+                        setSelectedRecipientName(recipient.name)
                         setManageGiversOpen(true)
                       }}
                     >

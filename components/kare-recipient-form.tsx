@@ -117,12 +117,28 @@ export function KareRecipientForm({
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
-        await createKareRecipient.mutateAsync(values)
+        const recipientData = {
+          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          gender: values.gender,
+          age: parseInt(values.age) || 0,
+          email: values.email,
+          phone: values.phone,
+          relationship: values.relationship,
+        }
+        await createKareRecipient.mutateAsync(recipientData)
         toast.success("Kare Recipient created successfully")
       } else {
         const id = (initialValues as any)?.id
         if (id) {
-          await updateKareRecipient.mutateAsync({ id: parseInt(id), ...values })
+          const recipientData = {
+            name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+            gender: values.gender,
+            age: parseInt(values.age) || 0,
+            email: values.email,
+            phone: values.phone,
+            relationship: values.relationship,
+          }
+          await updateKareRecipient.mutateAsync({ id: parseInt(id), ...recipientData })
           toast.success("Kare Recipient updated successfully")
         }
       }

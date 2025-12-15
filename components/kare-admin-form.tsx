@@ -88,12 +88,24 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
-        await createKareAdmin.mutateAsync(values)
+        const adminData = {
+          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          email: values.email,
+          mobile: values.mobile,
+          recipientId: 0, // Default value based on API response
+        }
+        await createKareAdmin.mutateAsync(adminData)
         toast.success("Kare Admin created successfully")
       } else {
         const id = (initialValues as any)?.id
         if (id) {
-          await updateKareAdmin.mutateAsync({ id: parseInt(id), ...values })
+          const adminData = {
+            name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+            email: values.email,
+            mobile: values.mobile,
+            recipientId: 0, // Default value based on API response
+          }
+          await updateKareAdmin.mutateAsync({ id: parseInt(id), ...adminData })
           toast.success("Kare Admin updated successfully")
         }
       }

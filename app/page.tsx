@@ -4,6 +4,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { HomeDataTable } from "@/components/home-data-table"
 import { SectionCards } from "@/components/section-cards"
 import Container from "@/components/layout/container"
+import { ErrorState } from "@/components/error-state"
 import { useDashboard } from "@/lib/hooks/useDashboard"
 
 export default function Home() {
@@ -12,9 +13,7 @@ export default function Home() {
   if (error) {
     return (
       <Container>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-destructive">Error loading dashboard data</p>
-        </div>
+        <ErrorState message="Error loading dashboard data" />
       </Container>
     )
   }

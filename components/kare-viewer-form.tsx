@@ -92,12 +92,24 @@ export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
-        await createKareViewer.mutateAsync(values)
+        const viewerData = {
+          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          email: values.email,
+          mobile: values.mobile,
+          recipientId: 0, // Default value based on API response
+        }
+        await createKareViewer.mutateAsync(viewerData)
         toast.success("Kare Viewer created successfully")
       } else {
         const id = (initialValues as any)?.id
         if (id) {
-          await updateKareViewer.mutateAsync({ id: parseInt(id), ...values })
+          const viewerData = {
+            name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+            email: values.email,
+            mobile: values.mobile,
+            recipientId: 0, // Default value based on API response
+          }
+          await updateKareViewer.mutateAsync({ id: parseInt(id), ...viewerData })
           toast.success("Kare Viewer updated successfully")
         }
       }

@@ -524,6 +524,122 @@ export interface ContactFilterParams {
 }
 
 // =============================================================================
+// KARE MANAGEMENT TYPES (Based on actual API responses)
+// =============================================================================
+
+/**
+ * Kare Admin interface - based on /user/org/kare-admin/list response
+ */
+export interface KareAdmin {
+  id: number
+  recipientId: number
+  recipient: string | null
+  name: string
+  email: string
+  mobile: string
+  subscriber: string
+  createdDate: string
+  additionalRole: string | null
+}
+
+/**
+ * Kare Giver interface - based on /user/kare-admin/kare-giver/list response
+ */
+export interface KareGiver {
+  id: number
+  recipientId: number
+  recipient: string | null
+  name: string
+  email: string
+  mobile: string
+  subscriber: string
+  createdDate: string
+  additionalRole: string | null
+}
+
+/**
+ * Kare Viewer interface - based on /user/kare-admin/viewer/list response
+ */
+export interface KareViewer {
+  id: number
+  recipientId: number
+  recipient: string | null
+  name: string
+  email: string
+  mobile: string
+  subscriber: string | null
+  createdDate: string
+  additionalRole: string | null
+}
+
+/**
+ * Kare Recipient interface - based on /kare-recipient/list response
+ */
+export interface KareRecipient {
+  id: number
+  relationship: string | null
+  subsciber: string // Note: API has typo "subsciber" instead of "subscriber"
+  name: string
+  gender: string
+  age: number
+  email: string
+  phone: string
+  profileImage: string | null
+  providerConnected: boolean
+  providers: unknown | null
+  createdDate: string
+}
+
+/**
+ * Create/Update request types for Kare entities
+ */
+export interface CreateKareAdminRequest {
+  name: string
+  email: string
+  mobile: string
+  recipientId?: number
+}
+
+export interface UpdateKareAdminRequest extends CreateKareAdminRequest {
+  id: number
+}
+
+export interface CreateKareGiverRequest {
+  name: string
+  email: string
+  mobile: string
+  recipientId?: number
+}
+
+export interface UpdateKareGiverRequest extends CreateKareGiverRequest {
+  id: number
+}
+
+export interface CreateKareViewerRequest {
+  name: string
+  email: string
+  mobile: string
+  recipientId?: number
+}
+
+export interface UpdateKareViewerRequest extends CreateKareViewerRequest {
+  id: number
+}
+
+export interface CreateKareRecipientRequest {
+  name: string
+  gender: string
+  age: number
+  email?: string
+  phone?: string
+  relationship?: string
+}
+
+export interface UpdateKareRecipientRequest extends CreateKareRecipientRequest {
+  id: number
+}
+
+// =============================================================================
 // COMMON UTILITY TYPES
 // =============================================================================
 

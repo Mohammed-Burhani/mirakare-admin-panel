@@ -87,15 +87,19 @@ export function KareGiverForm({ mode, giverId, initialValues }: KareGiverFormPro
     try {
       if (mode === "add") {
         const giverData = {
-          ...values,
-          phoneNumber: values.mobile,
+          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          email: values.email,
+          mobile: values.mobile,
+          recipientId: 0, // Default value based on API response
         }
         await createKareGiver.mutateAsync(giverData)
         toast.success("Kare Giver created successfully")
       } else if (mode === "edit" && giverId) {
         const giverData = {
-          ...values,
-          phoneNumber: values.mobile,
+          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          email: values.email,
+          mobile: values.mobile,
+          recipientId: 0, // Default value based on API response
         }
         await updateKareGiver.mutateAsync({ id: giverId, ...giverData })
         toast.success("Kare Giver updated successfully")

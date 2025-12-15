@@ -1,12 +1,18 @@
 import httpClient from './httpClient'
-import { CalendarSchedule, JournalNote, GraphData, Contact } from './types'
-
-// API response wrapper type
-interface ApiResponse<T> {
-  data: T
-  success: boolean
-  message?: string
-}
+import { 
+  CalendarSchedule, 
+  JournalNote, 
+  GraphData, 
+  Contact,
+  KareAdmin,
+  KareGiver,
+  KareViewer,
+  KareRecipient,
+  CreateKareAdminRequest,
+  CreateKareGiverRequest,
+  CreateKareViewerRequest,
+  CreateKareRecipientRequest
+} from './types'
 
 // Export httpClient methods directly
 export const apiClient = Object.assign(httpClient, {
@@ -37,82 +43,82 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   // Kare Givers
-  getKareGivers: async () => {
-    const response = await httpClient.post<unknown[]>('/user/kare-admin/kare-giver/list', {})
+  getKareGivers: async (): Promise<KareGiver[]> => {
+    const response = await httpClient.post<KareGiver[]>('/user/kare-admin/kare-giver/list', {})
     return response.data || []
   },
 
-  createKareGiver: async (giver: unknown) => {
-    const response = await httpClient.post<unknown>('/user/kare-admin/kare-giver/add', giver)
+  createKareGiver: async (giver: CreateKareGiverRequest): Promise<KareGiver> => {
+    const response = await httpClient.post<KareGiver>('/user/kare-admin/kare-giver/add', giver)
     return response.data
   },
 
-  updateKareGiver: async (id: number, giver: unknown) => {
-    const response = await httpClient.post<unknown>('/user/kare-admin/kare-giver/edit', { ...giver, id })
+  updateKareGiver: async (id: number, giver: Partial<CreateKareGiverRequest>): Promise<KareGiver> => {
+    const response = await httpClient.post<KareGiver>('/user/kare-admin/kare-giver/edit', { ...giver, id })
     return response.data
   },
 
-  deleteKareGiver: async (id: number) => {
+  deleteKareGiver: async (id: number): Promise<void> => {
     await httpClient.post('/user/kare-admin/kare-giver/delete', { id })
   },
 
   // Kare Recipients
-  getKareRecipients: async () => {
-    const response = await httpClient.post<unknown[]>('/kare-recipient/list', {})
+  getKareRecipients: async (): Promise<KareRecipient[]> => {
+    const response = await httpClient.post<KareRecipient[]>('/kare-recipient/list', {})
     return response.data || []
   },
 
-  createKareRecipient: async (recipient: unknown) => {
-    const response = await httpClient.post<unknown>('/kare-recipient/create', recipient)
+  createKareRecipient: async (recipient: CreateKareRecipientRequest): Promise<KareRecipient> => {
+    const response = await httpClient.post<KareRecipient>('/kare-recipient/create', recipient)
     return response.data
   },
 
-  updateKareRecipient: async (id: number, recipient: unknown) => {
-    const response = await httpClient.post<unknown>('/kare-recipient/edit', { ...recipient, id })
+  updateKareRecipient: async (id: number, recipient: Partial<CreateKareRecipientRequest>): Promise<KareRecipient> => {
+    const response = await httpClient.post<KareRecipient>('/kare-recipient/edit', { ...recipient, id })
     return response.data
   },
 
-  deleteKareRecipient: async (id: number) => {
+  deleteKareRecipient: async (id: number): Promise<void> => {
     await httpClient.post('/kare-recipient/delete', { id })
   },
 
   // Kare Viewers
-  getKareViewers: async () => {
-    const response = await httpClient.post<unknown[]>('/user/kare-admin/viewer/list', {})
+  getKareViewers: async (): Promise<KareViewer[]> => {
+    const response = await httpClient.post<KareViewer[]>('/user/kare-admin/viewer/list', {})
     return response.data || []
   },
 
-  createKareViewer: async (viewer: unknown) => {
-    const response = await httpClient.post<unknown>('/user/kare-admin/viewer/add', viewer)
+  createKareViewer: async (viewer: CreateKareViewerRequest): Promise<KareViewer> => {
+    const response = await httpClient.post<KareViewer>('/user/kare-admin/viewer/add', viewer)
     return response.data
   },
 
-  updateKareViewer: async (id: number, viewer: unknown) => {
-    const response = await httpClient.post<unknown>('/user/kare-admin/viewer/edit', { ...viewer, id })
+  updateKareViewer: async (id: number, viewer: Partial<CreateKareViewerRequest>): Promise<KareViewer> => {
+    const response = await httpClient.post<KareViewer>('/user/kare-admin/viewer/edit', { ...viewer, id })
     return response.data
   },
 
-  deleteKareViewer: async (id: number) => {
+  deleteKareViewer: async (id: number): Promise<void> => {
     await httpClient.post('/user/kare-admin/viewer/delete', { id })
   },
 
   // Kare Admins
-  getKareAdmins: async () => {
-    const response = await httpClient.post<unknown[]>('/user/org/kare-admin/list', {})
+  getKareAdmins: async (): Promise<KareAdmin[]> => {
+    const response = await httpClient.post<KareAdmin[]>('/user/org/kare-admin/list', {})
     return response.data || []
   },
 
-  createKareAdmin: async (admin: unknown) => {
-    const response = await httpClient.post<unknown>('/user/org/kare-admin/add', admin)
+  createKareAdmin: async (admin: CreateKareAdminRequest): Promise<KareAdmin> => {
+    const response = await httpClient.post<KareAdmin>('/user/org/kare-admin/add', admin)
     return response.data
   },
 
-  updateKareAdmin: async (id: number, admin: unknown) => {
-    const response = await httpClient.post<unknown>('/user/org/kare-admin/edit', { ...admin, id })
+  updateKareAdmin: async (id: number, admin: Partial<CreateKareAdminRequest>): Promise<KareAdmin> => {
+    const response = await httpClient.post<KareAdmin>('/user/org/kare-admin/edit', { ...admin, id })
     return response.data
   },
 
-  deleteKareAdmin: async (id: number) => {
+  deleteKareAdmin: async (id: number): Promise<void> => {
     await httpClient.post('/user/org/kare-admin/delete', { id })
   },
 

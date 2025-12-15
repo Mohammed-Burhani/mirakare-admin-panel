@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
+import { CreateKareRecipientRequest } from '../api/types'
 
 export const useKareRecipients = () => {
   const queryClient = useQueryClient()
@@ -12,14 +13,14 @@ export const useKareRecipients = () => {
   })
 
   const createKareRecipient = useMutation({
-    mutationFn: apiClient.createKareRecipient,
+    mutationFn: (data: CreateKareRecipientRequest) => apiClient.createKareRecipient(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kare-recipients'] })
     }
   })
 
   const updateKareRecipient = useMutation({
-    mutationFn: ({ id, ...data }: { id: number } & any) => 
+    mutationFn: ({ id, ...data }: { id: number } & Partial<CreateKareRecipientRequest>) => 
       apiClient.updateKareRecipient(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kare-recipients'] })
