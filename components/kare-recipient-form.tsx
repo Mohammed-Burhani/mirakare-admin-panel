@@ -24,6 +24,8 @@ import {
   IconStar,
 } from "@tabler/icons-react"
 import { RichTextEditor } from "@/components/rich-text-editor"
+import { useKareRecipients } from "@/lib/hooks/useKareRecipients"
+import { toast } from "sonner"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -110,10 +112,25 @@ export function KareRecipientForm({
   initialValues,
 }: KareRecipientFormProps) {
   const router = useRouter()
+  const { createKareRecipient, updateKareRecipient } = useKareRecipients()
 
-  const handleSubmit = (values: typeof defaultValues) => {
-    console.log("Form submitted:", values)
-    router.push("/kare-recipients")
+  const handleSubmit = async (values: typeof defaultValues) => {
+    try {
+      if (mode === "add") {
+        await createKareRecipient.mutateAsync(values)
+        toast.success("Kare Recipient created successfully")
+      } else {
+        const id = (initialValues as any)?.id
+        if (id) {
+          await updateKareRecipient.mutateAsync({ id: parseInt(id), ...values })
+          toast.success("Kare Recipient updated successfully")
+        }
+      }
+      router.push("/kare-recipients")
+    } catch (error) {
+      toast.error(`Failed to ${mode === "add" ? "create" : "update"} Kare Recipient`)
+      console.error("Form submission error:", error)
+    }
   }
 
   return (
@@ -536,7 +553,11 @@ export function KareRecipientForm({
               >
                 Clear
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-2">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || createKareRecipient.isPending || updateKareRecipient.isPending} 
+                className="gap-2"
+              >
                 <IconDeviceFloppy className="h-4 w-4" />
                 {mode === "add" ? "Add" : "Save Changes"}
               </Button>

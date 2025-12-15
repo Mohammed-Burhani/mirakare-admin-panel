@@ -19,6 +19,8 @@ import {
   IconNotes,
   IconEye,
 } from "@tabler/icons-react"
+import { useKareViewers } from "@/lib/hooks/useKareViewers"
+import { toast } from "sonner"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -85,10 +87,25 @@ const defaultValues = {
 
 export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
   const router = useRouter()
+  const { createKareViewer, updateKareViewer } = useKareViewers()
 
-  const handleSubmit = (values: typeof defaultValues) => {
-    console.log("Form submitted:", values)
-    router.push("/kare-viewers")
+  const handleSubmit = async (values: typeof defaultValues) => {
+    try {
+      if (mode === "add") {
+        await createKareViewer.mutateAsync(values)
+        toast.success("Kare Viewer created successfully")
+      } else {
+        const id = (initialValues as any)?.id
+        if (id) {
+          await updateKareViewer.mutateAsync({ id: parseInt(id), ...values })
+          toast.success("Kare Viewer updated successfully")
+        }
+      }
+      router.push("/kare-viewers")
+    } catch (error) {
+      toast.error(`Failed to ${mode === "add" ? "create" : "update"} Kare Viewer`)
+      console.error("Form submission error:", error)
+    }
   }
 
   return (
@@ -405,7 +422,11 @@ export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
               >
                 Clear
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-2">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || createKareViewer.isPending || updateKareViewer.isPending} 
+                className="gap-2"
+              >
                 <IconDeviceFloppy className="h-4 w-4" />
                 {mode === "add" ? "Add" : "Save Changes"}
               </Button>

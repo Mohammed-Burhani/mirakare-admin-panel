@@ -18,6 +18,7 @@ import {
   IconCalendar,
   IconUser,
   IconUsers,
+  IconLoader,
 } from "@tabler/icons-react"
 import {
   Dialog,
@@ -31,39 +32,12 @@ import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
 import { ManageKareGiversDialog } from "@/components/manage-kare-givers-dialog"
 import { QuickJournalingDialog } from "@/components/quick-journaling-dialog"
-
-// Mock data
-const mockRecipients = [
-  {
-    id: 1,
-    firstName: "Mira",
-    middleName: "",
-    lastName: "Sharma",
-    relationship: "Father",
-    gender: "Male",
-    age: "75",
-    email: "mira.sharma@example.com",
-    phone: "5551234567",
-    addressLine1: "123 Main Street",
-    addressLine2: "Apt 4B",
-    city: "New York",
-    state: "NY",
-    zipCode: "10001",
-    country: "United States",
-    notes: "",
-    about: "",
-    routines: "",
-    preferences: "",
-    medications: "",
-    contacts: "",
-    createdDate: "12/24/2023",
-    providers: "No device connected",
-  },
-]
+import { useKareRecipients } from "@/lib/hooks/useKareRecipients"
+import { toast } from "sonner"
 
 export default function KareRecipientsPage() {
   const router = useRouter()
-  const [recipients] = useState(mockRecipients)
+  const { data: recipients = [], isLoading, error, deleteKareRecipient } = useKareRecipients()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedRecipient, setSelectedRecipient] = useState<number | null>(
@@ -74,43 +48,61 @@ export default function KareRecipientsPage() {
   const [journalingOpen, setJournalingOpen] = useState(false)
   const [selectedRecipientName, setSelectedRecipientName] = useState("")
 
-  const filteredRecipients = recipients.filter((recipient) => {
+  const filteredRecipients = recipients.filter((recipient: any) => {
     const fullName =
-      `${recipient.firstName} ${recipient.middleName} ${recipient.lastName}`.toLowerCase()
+      `${recipient.firstName} ${recipient.middleName || ''} ${recipient.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
       fullName.includes(query) ||
-      recipient.email.toLowerCase().includes(query) ||
-      recipient.phone.includes(query) ||
-      recipient.relationship.toLowerCase().includes(query)
+      (recipient.email && recipient.email.toLowerCase().includes(query)) ||
+      (recipient.phone && recipient.phone.includes(query)) ||
+      (recipient.relationship && recipient.relationship.toLowerCase().includes(query))
     )
   })
 
-  const handleDelete = (id: number) => {
-    setSelectedRecipient(id)
+  const handleDelete = (id: string) => {
+    setSelectedRecipient(parseInt(id))
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    console.log("Deleting recipient:", selectedRecipient)
-    setDeleteDialogOpen(false)
-    setSelectedRecipient(null)
+  const confirmDelete = async () => {
+    if (selectedRecipient) {
+      try {
+        await deleteKareRecipient.mutateAsync(selectedRecipient)
+        toast.success("Kare Recipient deleted successfully")
+        setDeleteDialogOpen(false)
+        setSelectedRecipient(null)
+      } catch (error) {
+        toast.error("Failed to delete Kare Recipient")
+        console.error("Failed to delete recipient:", error)
+      }
+    }
   }
 
-  const columns: ColumnDef<(typeof mockRecipients)[0]>[] = [
+  if (error) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Error loading Kare Recipients</p>
+        </div>
+      </Container>
+    )
+  }
+
+  const columns: ColumnDef<unknown>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
-      cell: (row) => (
+      cell: ({ row }) => (
         <div className="font-medium">
-          {row.firstName} {row.middleName} {row.lastName}
+          {row.original.firstName} {row.original.middleName} {row.original.lastName}
         </div>
       ),
     },
     {
       accessorKey: "relationship",
       header: "Relationship",
-      cell: (row) => <Badge variant="secondary">{row.relationship}</Badge>,
+      cell: ({ row }) => <Badge variant="secondary">{row.original.relationship}</Badge>,
     },
     {
       accessorKey: "gender",
@@ -119,7 +111,7 @@ export default function KareRecipientsPage() {
     {
       accessorKey: "age",
       header: "Age",
-      cell: (row) => `${row.age} years`,
+      cell: ({ row }) => `${row.original.age} years`,
     },
     {
       accessorKey: "email",
@@ -135,14 +127,14 @@ export default function KareRecipientsPage() {
     },
     {
       header: "Actions",
-      cell: (row) => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              router.push(`/kare-recipients/edit/${row.id}`)
+              router.push(`/kare-recipients/edit/${row.original.id}`)
             }}
           >
             <IconEdit className="h-4 w-4" />
@@ -152,7 +144,7 @@ export default function KareRecipientsPage() {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleDelete(row.id)
+              handleDelete(row.original.id)
             }}
             className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
@@ -212,8 +204,16 @@ export default function KareRecipientsPage() {
           </div>
         )}
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <IconLoader className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading Kare Recipients...</span>
+          </div>
+        )}
+
         {/* Card View */}
-        {view === "card" && (
+        {!isLoading && view === "card" && (
           <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
             {filteredRecipients.map((recipient) => (
             <Card
@@ -260,7 +260,7 @@ export default function KareRecipientsPage() {
                   <div className="flex items-center gap-3">
                     <IconUsers className="text-muted-foreground h-4 w-4 shrink-0" />
                     <span className="text-muted-foreground truncate text-sm">
-                      {recipient.providers}
+                      Caregiver: {recipient.caregiver}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -273,16 +273,16 @@ export default function KareRecipientsPage() {
 
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2 border-t pt-4">
-                  {recipient.providers === "No device connected" && (
+                  {!recipient.caregiver && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        console.log("Connect device for:", recipient.id)
+                        console.log("Assign caregiver for:", recipient.id)
                       }}
                     >
-                      Connect Device
+                      Assign Caregiver
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-2">
@@ -341,7 +341,7 @@ export default function KareRecipientsPage() {
         )}
 
         {/* Empty State */}
-        {filteredRecipients.length === 0 && view === "card" && (
+        {!isLoading && filteredRecipients.length === 0 && view === "card" && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
               <IconHeartbeat className="text-muted-foreground h-10 w-10" />

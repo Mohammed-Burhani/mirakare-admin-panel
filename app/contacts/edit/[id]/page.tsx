@@ -3,25 +3,8 @@
 import { use } from "react"
 import Container from "@/components/layout/container"
 import { ContactForm } from "@/components/contact-form"
-
-// Mock data - in real app, fetch based on id
-const mockContactData = {
-  recipient: "Mira Sharma",
-  relationship: "Family",
-  type: "Family",
-  firstName: "Neelam",
-  middleName: "",
-  lastName: "Khanna",
-  email: "neelam.khanna@gmail.com",
-  phone: "9084152180",
-  addressLine1: "123 Main Street",
-  addressLine2: "Apt 4B",
-  city: "New York",
-  state: "NY",
-  zipCode: "10001",
-  country: "United States",
-  notes: "",
-}
+import { useContact } from "@/lib/hooks/useContact"
+import { IconLoader } from "@tabler/icons-react"
 
 export default function EditContactPage({
   params,
@@ -29,13 +12,41 @@ export default function EditContactPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
+  const contactId = parseInt(id)
+  const { data: contacts = [], isLoading } = useContact()
+  
+  const contact = contacts.find((c: any) => c.id === String(contactId))
 
-  // In a real app, fetch data based on id
-  console.log("Editing contact with id:", id)
+  if (isLoading) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <IconLoader className="h-4 w-4 animate-spin" />
+            Loading contact...
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  if (!contact) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Contact not found</p>
+        </div>
+      </Container>
+    )
+  }
 
   return (
     <Container>
-      <ContactForm mode="edit" initialValues={mockContactData} />
+      <ContactForm 
+        mode="edit" 
+        contactId={contactId}
+        initialValues={contact} 
+      />
     </Container>
   )
 }

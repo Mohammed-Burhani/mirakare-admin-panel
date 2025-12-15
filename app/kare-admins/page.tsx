@@ -17,6 +17,7 @@ import {
   IconPhone,
   IconCalendar,
   IconUser,
+  IconLoader,
 } from "@tabler/icons-react"
 import {
   Dialog,
@@ -28,31 +29,12 @@ import {
 } from "@/components/ui/dialog"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
-
-// Mock data
-const mockAdmins = [
-  {
-    id: 1,
-    firstName: "Vik",
-    middleName: "",
-    lastName: "Sharma",
-    email: "mkkaregiver@gmail.com",
-    mobile: "4287653109",
-    addressLine1: "33 Wood Avenue South Suite 600",
-    addressLine2: "Iselin, NJ, 08830",
-    city: "Iselin",
-    state: "NEW JERSEY",
-    zipCode: "08830",
-    country: "United States",
-    notes: "",
-    createdDate: "12/24/2023",
-    status: "Active",
-  },
-]
+import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
+import { toast } from "sonner"
 
 export default function KareAdminsPage() {
   const router = useRouter()
-  const [admins] = useState(mockAdmins)
+  const { data: admins = [], isLoading, deleteKareAdmin } = useKareAdmins()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<number | null>(null)
@@ -68,25 +50,32 @@ export default function KareAdminsPage() {
     )
   })
 
-  const handleDelete = (id: number) => {
-    setSelectedAdmin(id)
+  const handleDelete = (id: string) => {
+    setSelectedAdmin(parseInt(id))
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    // Delete logic here
-    console.log("Deleting admin:", selectedAdmin)
-    setDeleteDialogOpen(false)
-    setSelectedAdmin(null)
+  const confirmDelete = async () => {
+    if (selectedAdmin) {
+      try {
+        await deleteKareAdmin.mutateAsync(selectedAdmin)
+        toast.success("Kare Admin deleted successfully")
+        setDeleteDialogOpen(false)
+        setSelectedAdmin(null)
+      } catch (error) {
+        toast.error("Failed to delete Kare Admin")
+        console.error("Failed to delete admin:", error)
+      }
+    }
   }
 
-  const columns: ColumnDef<(typeof mockAdmins)[0]>[] = [
+  const columns: ColumnDef<unknown>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
-      cell: (row) => (
+      cell: ({ row }) => (
         <div className="font-medium">
-          {row.firstName} {row.middleName} {row.lastName}
+          {row.original.firstName} {row.original.middleName} {row.original.lastName}
         </div>
       ),
     },
@@ -100,14 +89,14 @@ export default function KareAdminsPage() {
     },
     {
       header: "Location",
-      cell: (row) => `${row.city}, ${row.state}`,
+      cell: ({ row }) => `${row.original.city}, ${row.original.state}`,
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: (row) => (
-        <Badge variant={row.status === "Active" ? "default" : "secondary"}>
-          {row.status}
+      cell: ({ row }) => (
+        <Badge variant={row.original.status === "Active" ? "default" : "secondary"}>
+          {row.original.status}
         </Badge>
       ),
     },
@@ -117,14 +106,14 @@ export default function KareAdminsPage() {
     },
     {
       header: "Actions",
-      cell: (row) => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              router.push(`/kare-admins/edit/${row.id}`)
+              router.push(`/kare-admins/edit/${row.original.id}`)
             }}
           >
             <IconEdit className="h-4 w-4" />
@@ -134,7 +123,7 @@ export default function KareAdminsPage() {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleDelete(row.id)
+              handleDelete(row.original.id)
             }}
             className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
@@ -272,8 +261,16 @@ export default function KareAdminsPage() {
           </div>
         )}
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <IconLoader className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading Kare Admins...</span>
+          </div>
+        )}
+
         {/* Empty State */}
-        {filteredAdmins.length === 0 && view === "card" && (
+        {!isLoading && filteredAdmins.length === 0 && view === "card" && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
               <IconShieldCheck className="text-muted-foreground h-10 w-10" />

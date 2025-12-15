@@ -18,6 +18,8 @@ import {
   IconMapPin,
   IconNotes,
 } from "@tabler/icons-react"
+import { useKareGivers } from "@/lib/hooks/useKareGivers"
+import { toast } from "sonner"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -45,6 +47,7 @@ const validationSchema = Yup.object({
 
 interface KareGiverFormProps {
   mode: "add" | "edit"
+  giverId?: number
   initialValues?: {
     firstName: string
     middleName: string
@@ -76,12 +79,32 @@ const defaultValues = {
   notes: "",
 }
 
-export function KareGiverForm({ mode, initialValues }: KareGiverFormProps) {
+export function KareGiverForm({ mode, giverId, initialValues }: KareGiverFormProps) {
   const router = useRouter()
+  const { createKareGiver, updateKareGiver } = useKareGivers()
 
-  const handleSubmit = (values: typeof defaultValues) => {
-    console.log("Form submitted:", values)
-    router.push("/kare-givers")
+  const handleSubmit = async (values: typeof defaultValues) => {
+    try {
+      if (mode === "add") {
+        const giverData = {
+          ...values,
+          phoneNumber: values.mobile,
+        }
+        await createKareGiver.mutateAsync(giverData)
+        toast.success("Kare Giver created successfully")
+      } else if (mode === "edit" && giverId) {
+        const giverData = {
+          ...values,
+          phoneNumber: values.mobile,
+        }
+        await updateKareGiver.mutateAsync({ id: giverId, ...giverData })
+        toast.success("Kare Giver updated successfully")
+      }
+      router.push("/kare-givers")
+    } catch (error) {
+      toast.error(mode === "add" ? "Failed to create Kare Giver" : "Failed to update Kare Giver")
+      console.error("Form submission error:", error)
+    }
   }
 
   return (

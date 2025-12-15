@@ -458,8 +458,10 @@ const careAdminColumns: ColumnDef<z.infer<typeof schema>>[] = [
 
 export function HomeDataTable({
   data: initialData,
+  isLoading = false,
 }: {
   data: z.infer<typeof schema>[]
+  isLoading?: boolean
 }) {
   const [activeTab, setActiveTab] = React.useState("kare-givers")
   const [rowSelection, setRowSelection] = React.useState({})
@@ -625,7 +627,19 @@ export function HomeDataTable({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <IconLoader className="h-4 w-4 animate-spin" />
+                      Loading...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}

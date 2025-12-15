@@ -19,6 +19,8 @@ import {
   IconMapPin,
   IconNotes,
 } from "@tabler/icons-react"
+import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
+import { toast } from "sonner"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -81,11 +83,25 @@ const defaultValues = {
 
 export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
   const router = useRouter()
+  const { createKareAdmin, updateKareAdmin } = useKareAdmins()
 
-  const handleSubmit = (values: typeof defaultValues) => {
-    console.log("Form submitted:", values)
-    // Add your submit logic here
-    router.push("/kare-admins")
+  const handleSubmit = async (values: typeof defaultValues) => {
+    try {
+      if (mode === "add") {
+        await createKareAdmin.mutateAsync(values)
+        toast.success("Kare Admin created successfully")
+      } else {
+        const id = (initialValues as any)?.id
+        if (id) {
+          await updateKareAdmin.mutateAsync({ id: parseInt(id), ...values })
+          toast.success("Kare Admin updated successfully")
+        }
+      }
+      router.push("/kare-admins")
+    } catch (error) {
+      toast.error(`Failed to ${mode === "add" ? "create" : "update"} Kare Admin`)
+      console.error("Form submission error:", error)
+    }
   }
 
   return (
@@ -381,7 +397,11 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
               >
                 Clear
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-2">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || createKareAdmin.isPending || updateKareAdmin.isPending} 
+                className="gap-2"
+              >
                 <IconDeviceFloppy className="h-4 w-4" />
                 {mode === "add" ? "Add" : "Save Changes"}
               </Button>

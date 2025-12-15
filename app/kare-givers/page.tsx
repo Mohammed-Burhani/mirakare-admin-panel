@@ -16,6 +16,7 @@ import {
   IconCalendar,
   IconUser,
   IconMapPin,
+  IconLoader,
 } from "@tabler/icons-react"
 import {
   Dialog,
@@ -27,74 +28,58 @@ import {
 } from "@/components/ui/dialog"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
-
-// Mock data
-const mockGivers = [
-  {
-    id: 1,
-    firstName: "Monica",
-    middleName: "",
-    lastName: "R",
-    email: "mirasbabygirl@gmail.com",
-    mobile: "7327180652",
-    addressLine1: "123 Main Street",
-    addressLine2: "Apt 4B",
-    city: "New York",
-    state: "NY",
-    zipCode: "10001",
-    country: "United States",
-    notes: "",
-    createdDate: "12/24/2023",
-  },
-  {
-    id: 2,
-    firstName: "Kristin",
-    middleName: "",
-    lastName: "P",
-    email: "policastrokristin@gmail.com",
-    mobile: "7327662727",
-    addressLine1: "456 Oak Avenue",
-    addressLine2: "",
-    city: "Los Angeles",
-    state: "CA",
-    zipCode: "90001",
-    country: "United States",
-    notes: "",
-    createdDate: "12/24/2023",
-  },
-]
+import { useKareGivers } from "@/lib/hooks/useKareGivers"
+import { toast } from "sonner"
 
 export default function KareGiversPage() {
   const router = useRouter()
-  const [givers] = useState(mockGivers)
+  const { data: givers = [], isLoading, error, deleteKareGiver } = useKareGivers()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGiver, setSelectedGiver] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredGivers = givers.filter((giver) => {
+  const filteredGivers = givers.filter((giver: any) => {
     const fullName =
-      `${giver.firstName} ${giver.middleName} ${giver.lastName}`.toLowerCase()
+      `${giver.firstName} ${giver.middleName || ''} ${giver.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
       fullName.includes(query) ||
-      giver.email.toLowerCase().includes(query) ||
-      giver.mobile.includes(query)
+      (giver.email && giver.email.toLowerCase().includes(query)) ||
+      (giver.mobile && giver.mobile.includes(query))
     )
   })
 
-  const handleDelete = (id: number) => {
-    setSelectedGiver(id)
+  const handleDelete = (id: string) => {
+    setSelectedGiver(parseInt(id))
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    console.log("Deleting giver:", selectedGiver)
-    setDeleteDialogOpen(false)
-    setSelectedGiver(null)
+  const confirmDelete = async () => {
+    if (selectedGiver) {
+      try {
+        await deleteKareGiver.mutateAsync(selectedGiver)
+        toast.success("Kare Giver deleted successfully")
+        setDeleteDialogOpen(false)
+        setSelectedGiver(null)
+      } catch (error) {
+        toast.error("Failed to delete Kare Giver")
+        console.error("Failed to delete giver:", error)
+      }
+    }
   }
 
-  const columns: ColumnDef<(typeof mockGivers)[0]>[] = [
+  if (error) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Error loading Kare Givers</p>
+        </div>
+      </Container>
+    )
+  }
+
+  const columns: ColumnDef<any>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
@@ -191,18 +176,36 @@ export default function KareGiversPage() {
         {/* Table View */}
         {view === "table" && (
           <div className="px-4 lg:px-6">
-            <DataTable
-              columns={columns}
-              data={filteredGivers}
-              onRowClick={(row) => router.push(`/kare-givers/edit/${row.id}`)}
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2">
+                  <IconLoader className="h-4 w-4 animate-spin" />
+                  Loading Kare Givers...
+                </div>
+              </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={filteredGivers}
+                onRowClick={(row) => router.push(`/kare-givers/edit/${row.id}`)}
+              />
+            )}
           </div>
         )}
 
         {/* Card View */}
         {view === "card" && (
-          <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-            {filteredGivers.map((giver) => (
+          <>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2">
+                  <IconLoader className="h-4 w-4 animate-spin" />
+                  Loading Kare Givers...
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
+                {filteredGivers.map((giver: unknown) => (
             <Card
               key={giver.id}
               className="group relative overflow-hidden transition-all hover:shadow-lg"
@@ -215,12 +218,12 @@ export default function KareGiversPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-xl font-semibold">
-                      {giver.firstName} {giver.middleName} {giver.lastName}
+                      {giver.firstName} {giver.middleName || ''} {giver.lastName}
                     </h3>
                     <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                       <IconMapPin className="h-4 w-4" />
                       <span className="truncate">
-                        {giver.city}, {giver.state}
+                        {giver.city || 'N/A'}, {giver.state || 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -230,16 +233,16 @@ export default function KareGiversPage() {
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex items-center gap-3">
                     <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="truncate text-sm">{giver.email}</span>
+                    <span className="truncate text-sm">{giver.email || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-sm">{giver.mobile}</span>
+                    <span className="text-sm">{giver.mobile || giver.phoneNumber || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                     <span className="text-muted-foreground text-sm">
-                      Created: {giver.createdDate}
+                      Created: {giver.createdDate || new Date(giver.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -269,8 +272,10 @@ export default function KareGiversPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-          </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}

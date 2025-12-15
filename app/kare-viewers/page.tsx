@@ -18,6 +18,7 @@ import {
   IconUser,
   IconMapPin,
   IconEye,
+  IconLoader,
 } from "@tabler/icons-react"
 import {
   Dialog,
@@ -29,80 +30,60 @@ import {
 } from "@/components/ui/dialog"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
-
-// Mock data
-const mockViewers = [
-  {
-    id: 1,
-    firstName: "John",
-    middleName: "",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    mobile: "5551234567",
-    recipient: "Mira Sharma",
-    relationship: "Son",
-    addressLine1: "123 Main Street",
-    addressLine2: "Apt 4B",
-    city: "New York",
-    state: "NY",
-    zipCode: "10001",
-    country: "United States",
-    notes: "",
-    createdDate: "12/24/2023",
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    middleName: "M",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    mobile: "5559876543",
-    recipient: "Mira Sharma",
-    relationship: "Daughter",
-    addressLine1: "456 Oak Avenue",
-    addressLine2: "",
-    city: "Los Angeles",
-    state: "CA",
-    zipCode: "90001",
-    country: "United States",
-    notes: "",
-    createdDate: "12/25/2023",
-  },
-]
+import { useKareViewers } from "@/lib/hooks/useKareViewers"
+import { toast } from "sonner"
 
 export default function KareViewersPage() {
   const router = useRouter()
-  const [viewers] = useState(mockViewers)
+  const { data: viewers = [], isLoading, error, deleteKareViewer } = useKareViewers()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedViewer, setSelectedViewer] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredViewers = viewers.filter((viewer) => {
+  const filteredViewers = viewers.filter((viewer: any) => {
     const fullName =
-      `${viewer.firstName} ${viewer.middleName} ${viewer.lastName}`.toLowerCase()
+      `${viewer.firstName} ${viewer.middleName || ''} ${viewer.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
       fullName.includes(query) ||
-      viewer.email.toLowerCase().includes(query) ||
-      viewer.mobile.includes(query) ||
-      viewer.recipient.toLowerCase().includes(query) ||
-      viewer.relationship.toLowerCase().includes(query)
+      (viewer.email && viewer.email.toLowerCase().includes(query)) ||
+      (viewer.mobile && viewer.mobile.includes(query)) ||
+      (viewer.recipient && viewer.recipient.toLowerCase().includes(query)) ||
+      (viewer.relation && viewer.relation.toLowerCase().includes(query))
     )
   })
 
-  const handleDelete = (id: number) => {
-    setSelectedViewer(id)
+  const handleDelete = (id: string) => {
+    setSelectedViewer(parseInt(id))
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    console.log("Deleting viewer:", selectedViewer)
-    setDeleteDialogOpen(false)
-    setSelectedViewer(null)
+  const confirmDelete = async () => {
+    if (selectedViewer) {
+      try {
+        await deleteKareViewer.mutateAsync(selectedViewer)
+        toast.success("Kare Viewer deleted successfully")
+        setDeleteDialogOpen(false)
+        setSelectedViewer(null)
+      } catch (error) {
+        toast.error("Failed to delete Kare Viewer")
+        console.error("Failed to delete viewer:", error)
+      }
+    }
   }
 
-  const columns: ColumnDef<(typeof mockViewers)[0]>[] = [
+  if (error) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Error loading Kare Viewers</p>
+        </div>
+      </Container>
+    )
+  }
+
+  const columns: ColumnDef<any>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
@@ -208,18 +189,36 @@ export default function KareViewersPage() {
         {/* Table View */}
         {view === "table" && (
           <div className="px-4 lg:px-6">
-            <DataTable
-              columns={columns}
-              data={filteredViewers}
-              onRowClick={(row) => router.push(`/kare-viewers/edit/${row.id}`)}
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2">
+                  <IconLoader className="h-4 w-4 animate-spin" />
+                  Loading Kare Viewers...
+                </div>
+              </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={filteredViewers}
+                onRowClick={(row) => router.push(`/kare-viewers/edit/${row.id}`)}
+              />
+            )}
           </div>
         )}
 
         {/* Card View */}
         {view === "card" && (
-          <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-            {filteredViewers.map((viewer) => (
+          <>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2">
+                  <IconLoader className="h-4 w-4 animate-spin" />
+                  Loading Kare Viewers...
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
+                {filteredViewers.map((viewer: unknown) => (
               <Card
                 key={viewer.id}
                 className="group relative overflow-hidden transition-all hover:shadow-lg"
@@ -239,11 +238,11 @@ export default function KareViewersPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-xl font-semibold">
-                        {viewer.firstName} {viewer.middleName} {viewer.lastName}
+                        {viewer.firstName} {viewer.middleName || ''} {viewer.lastName}
                       </h3>
                       <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                         <IconUser className="h-4 w-4" />
-                        <span>Viewing: {viewer.recipient}</span>
+                        <span>Viewing: {viewer.recipient || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -252,22 +251,22 @@ export default function KareViewersPage() {
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center gap-3">
                       <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
-                      <span className="truncate text-sm">{viewer.email}</span>
+                      <span className="truncate text-sm">{viewer.email || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                      <span className="text-sm">{viewer.mobile}</span>
+                      <span className="text-sm">{viewer.mobile || viewer.phoneNumber || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <IconMapPin className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground truncate text-sm">
-                        {viewer.city}, {viewer.state}
+                        {viewer.city || 'N/A'}, {viewer.state || 'N/A'}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground text-sm">
-                        Created: {viewer.createdDate}
+                        Created: {viewer.createdDate || new Date(viewer.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -297,8 +296,10 @@ export default function KareViewersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}

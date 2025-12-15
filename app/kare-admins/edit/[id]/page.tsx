@@ -3,22 +3,8 @@
 import { use } from "react"
 import Container from "@/components/layout/container"
 import { KareAdminForm } from "@/components/kare-admin-form"
-
-// Mock data - in real app, fetch from API
-const mockAdmin = {
-  firstName: "Vik",
-  middleName: "",
-  lastName: "Sharma",
-  mobile: "4287653109",
-  email: "mkkaregiver@gmail.com",
-  addressLine1: "33 Wood Avenue South Suite 600",
-  addressLine2: "Iselin, NJ, 08830",
-  city: "Iselin",
-  state: "NEW JERSEY",
-  zipCode: "08830",
-  country: "United States",
-  notes: "",
-}
+import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
+import { IconLoader } from "@tabler/icons-react"
 
 export default function EditKareAdminPage({
   params,
@@ -26,13 +12,34 @@ export default function EditKareAdminPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
+  const { data: admins = [], isLoading, error } = useKareAdmins()
   
-  // In real app, fetch admin data by id
-  console.log("Editing admin with id:", id)
+  const admin = admins.find(a => a.id === id)
+
+  if (isLoading) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <IconLoader className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading admin data...</span>
+        </div>
+      </Container>
+    )
+  }
+
+  if (error || !admin) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-destructive">Admin not found or error loading data</p>
+        </div>
+      </Container>
+    )
+  }
 
   return (
     <Container>
-      <KareAdminForm mode="edit" initialValues={mockAdmin} />
+      <KareAdminForm mode="edit" initialValues={admin} />
     </Container>
   )
 }

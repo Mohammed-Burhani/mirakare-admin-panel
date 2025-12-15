@@ -19,6 +19,8 @@ import {
   IconNotes,
   IconAddressBook,
 } from "@tabler/icons-react"
+import { useContact } from "@/lib/hooks/useContact"
+import { toast } from "sonner"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -49,6 +51,7 @@ const validationSchema = Yup.object({
 
 interface ContactFormProps {
   mode: "add" | "edit"
+  contactId?: number
   initialValues?: {
     recipient: string
     relationship: string
@@ -86,12 +89,34 @@ const defaultValues = {
   notes: "",
 }
 
-export function ContactForm({ mode, initialValues }: ContactFormProps) {
+export function ContactForm({ mode, contactId, initialValues }: ContactFormProps) {
   const router = useRouter()
+  const { data: contacts = [], createContact, updateContact } = useContact()
 
-  const handleSubmit = (values: typeof defaultValues) => {
-    console.log("Form submitted:", values)
-    router.push("/contacts")
+  const handleSubmit = async (values: typeof defaultValues) => {
+    try {
+      if (mode === "add") {
+        const contactData = {
+          ...values,
+          phoneNumber: values.phone,
+          isEmergencyContact: false,
+          userId: "user1", // Mock user ID
+        }
+        await createContact.mutateAsync(contactData)
+        toast.success("Contact created successfully")
+      } else if (mode === "edit" && contactId) {
+        const contactData = {
+          ...values,
+          phoneNumber: values.phone,
+        }
+        await updateContact.mutateAsync({ id: contactId, ...contactData })
+        toast.success("Contact updated successfully")
+      }
+      router.push("/contacts")
+    } catch (error) {
+      toast.error(mode === "add" ? "Failed to create contact" : "Failed to update contact")
+      console.error("Form submission error:", error)
+    }
   }
 
   return (
