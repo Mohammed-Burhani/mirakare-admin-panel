@@ -33,6 +33,7 @@ import { ViewToggle } from "@/components/view-toggle"
 import { ManageKareGiversDialog } from "@/components/manage-kare-givers-dialog"
 import { QuickJournalingDialog } from "@/components/quick-journaling-dialog"
 import { useKareRecipients } from "@/lib/hooks/useKareRecipients"
+import { KareRecipient } from "@/lib/api/types"
 import { toast } from "sonner"
 
 export default function KareRecipientsPage() {
@@ -48,7 +49,7 @@ export default function KareRecipientsPage() {
   const [journalingOpen, setJournalingOpen] = useState(false)
   const [selectedRecipientName, setSelectedRecipientName] = useState("")
 
-  const filteredRecipients = recipients.filter((recipient: any) => {
+  const filteredRecipients = recipients.filter((recipient: KareRecipient) => {
     const query = searchQuery.toLowerCase()
     return (
       (recipient.name && recipient.name.toLowerCase().includes(query)) ||
@@ -59,8 +60,8 @@ export default function KareRecipientsPage() {
     )
   })
 
-  const handleDelete = (id: string) => {
-    setSelectedRecipient(parseInt(id))
+  const handleDelete = (id: number) => {
+    setSelectedRecipient(id)
     setDeleteDialogOpen(true)
   }
 
@@ -88,20 +89,20 @@ export default function KareRecipientsPage() {
     )
   }
 
-  const columns: ColumnDef<unknown>[] = [
+  const columns: ColumnDef<KareRecipient>[] = [
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => (
+      cell: (row) => (
         <div className="font-medium">
-          {row.original.name}
+          {row.name}
         </div>
       ),
     },
     {
       accessorKey: "relationship",
       header: "Relationship",
-      cell: ({ row }) => <Badge variant="secondary">{row.original.relationship || 'N/A'}</Badge>,
+      cell: (row) => <Badge variant="secondary">{row.relationship || 'N/A'}</Badge>,
     },
     {
       accessorKey: "gender",
@@ -110,7 +111,7 @@ export default function KareRecipientsPage() {
     {
       accessorKey: "age",
       header: "Age",
-      cell: ({ row }) => `${row.original.age} years`,
+      cell: (row) => `${row.age} years`,
     },
     {
       accessorKey: "email",
@@ -127,27 +128,27 @@ export default function KareRecipientsPage() {
     {
       accessorKey: "providerConnected",
       header: "Provider",
-      cell: ({ row }) => (
-        <Badge variant={row.original.providerConnected ? "default" : "secondary"}>
-          {row.original.providerConnected ? "Connected" : "Not Connected"}
+      cell: (row) => (
+        <Badge variant={row.providerConnected ? "default" : "secondary"}>
+          {row.providerConnected ? "Connected" : "Not Connected"}
         </Badge>
       ),
     },
     {
       accessorKey: "createdDate",
       header: "Created Date",
-      cell: ({ row }) => new Date(row.original.createdDate).toLocaleDateString(),
+      cell: (row) => new Date(row.createdDate).toLocaleDateString(),
     },
     {
       header: "Actions",
-      cell: ({ row }) => (
+      cell: (row) => (
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              router.push(`/kare-recipients/edit/${row.original.id}`)
+              router.push(`/kare-recipients/edit/${row.id}`)
             }}
           >
             <IconEdit className="h-4 w-4" />
@@ -157,7 +158,7 @@ export default function KareRecipientsPage() {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleDelete(row.original.id)
+              handleDelete(row.id)
             }}
             className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
@@ -229,130 +230,130 @@ export default function KareRecipientsPage() {
         {!isLoading && view === "card" && (
           <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
             {filteredRecipients.map((recipient) => (
-            <Card
-              key={recipient.id}
-              className="group relative overflow-hidden transition-all hover:shadow-lg"
-            >
-              {/* Provider Status Badge */}
-              <div className="absolute right-4 top-4 z-10">
-                <Badge variant={recipient.providerConnected ? "default" : "secondary"} className="shadow-sm">
-                  {recipient.providerConnected ? "Provider Connected" : "No Provider"}
-                </Badge>
-              </div>
-
-              <CardContent className="p-6">
-                {/* Profile Section */}
-                <div className="mb-4 flex items-start gap-4">
-                  <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-full">
-                    <IconUser className="text-primary h-8 w-8" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-xl font-semibold">
-                      {recipient.name}
-                    </h3>
-                    <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
-                      <IconHeartbeat className="h-4 w-4" />
-                      <span>
-                        {recipient.gender}, {recipient.age} years
-                      </span>
-                    </div>
-                  </div>
+              <Card
+                key={recipient.id}
+                className="group relative overflow-hidden transition-all hover:shadow-lg"
+              >
+                {/* Provider Status Badge */}
+                <div className="absolute right-4 top-4 z-10">
+                  <Badge variant={recipient.providerConnected ? "default" : "secondary"} className="shadow-sm">
+                    {recipient.providerConnected ? "Provider Connected" : "No Provider"}
+                  </Badge>
                 </div>
 
-                {/* Contact Information */}
-                <div className="space-y-3 border-t pt-4">
-                  <div className="flex items-center gap-3">
-                    <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="truncate text-sm">{recipient.email || 'N/A'}</span>
+                <CardContent className="p-6">
+                  {/* Profile Section */}
+                  <div className="mb-4 flex items-start gap-4">
+                    <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-full">
+                      <IconUser className="text-primary h-8 w-8" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-xl font-semibold">
+                        {recipient.name}
+                      </h3>
+                      <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
+                        <IconHeartbeat className="h-4 w-4" />
+                        <span>
+                          {recipient.gender}, {recipient.age} years
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-sm">{recipient.phone || 'N/A'}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <IconUsers className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-muted-foreground truncate text-sm">
-                      Subscriber: {recipient.subsciber || 'N/A'}
-                    </span>
-                  </div>
-                  {recipient.relationship && (
+
+                  {/* Contact Information */}
+                  <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center gap-3">
-                      <IconUser className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <IconMail className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="truncate text-sm">{recipient.email || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <IconPhone className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="text-sm">{recipient.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <IconUsers className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground truncate text-sm">
-                        Relationship: {recipient.relationship}
+                        Subscriber: {recipient.subsciber || 'N/A'}
                       </span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
-                    <span className="text-muted-foreground text-sm">
-                      Created: {new Date(recipient.createdDate).toLocaleDateString()}
-                    </span>
+                    {recipient.relationship && (
+                      <div className="flex items-center gap-3">
+                        <IconUser className="text-muted-foreground h-4 w-4 shrink-0" />
+                        <span className="text-muted-foreground truncate text-sm">
+                          Relationship: {recipient.relationship}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="text-muted-foreground text-sm">
+                        Created: {new Date(recipient.createdDate).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="mt-4 space-y-2 border-t pt-4">
-                  {!recipient.providerConnected && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        console.log("Connect provider for:", recipient.id)
-                      }}
-                    >
-                      Connect Provider
-                    </Button>
-                  )}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedRecipientName(recipient.name)
-                        setJournalingOpen(true)
-                      }}
-                    >
-                      Configure Quick Journaling
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedRecipientName(recipient.name)
-                        setManageGiversOpen(true)
-                      }}
-                    >
-                      Manage Kare Givers
-                    </Button>
+                  {/* Action Buttons */}
+                  <div className="mt-4 space-y-2 border-t pt-4">
+                    {!recipient.providerConnected && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-green-600 text-white"
+                        onClick={() => {
+                          console.log("Connect provider for:", recipient.id)
+                        }}
+                      >
+                        Connect Provider
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRecipientName(recipient.name)
+                          setJournalingOpen(true)
+                        }}
+                      >
+                        Configure Quick Journaling
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRecipientName(recipient.name)
+                          setManageGiversOpen(true)
+                        }}
+                      >
+                        Manage Kare Givers
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={() =>
+                          router.push(`/kare-recipients/edit/${recipient.id}`)
+                        }
+                      >
+                        <IconEdit className="h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={() => handleDelete(recipient.id)}
+                      >
+                        <IconTrash className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-2"
-                      onClick={() =>
-                        router.push(`/kare-recipients/edit/${recipient.id}`)
-                      }
-                    >
-                      <IconEdit className="h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleDelete(recipient.id)}
-                    >
-                      <IconTrash className="h-4 w-4" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
 
