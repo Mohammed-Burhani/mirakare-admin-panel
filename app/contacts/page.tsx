@@ -31,6 +31,7 @@ import {
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
 import { useContact } from "@/lib/hooks/useContact"
+import { Contact } from "@/lib/api/types"
 
 export default function ContactsPage() {
   const router = useRouter()
@@ -40,21 +41,23 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredContacts = contacts.filter((contact: any) => {
-    const fullName =
+  const filteredContacts = contacts.filter((contact: Contact) => {
+    const fullName = contact.name || 
       `${contact.firstName} ${contact.middleName || ''} ${contact.lastName}`.toLowerCase()
     const query = searchQuery.toLowerCase()
     return (
-      fullName.includes(query) ||
+      fullName.toLowerCase().includes(query) ||
       (contact.email && contact.email.toLowerCase().includes(query)) ||
       (contact.phone && contact.phone.includes(query)) ||
+      (contact.phoneNumber && contact.phoneNumber.includes(query)) ||
       (contact.recipient && contact.recipient.toLowerCase().includes(query)) ||
-      (contact.type && contact.type.toLowerCase().includes(query))
+      (contact.type && contact.type.toLowerCase().includes(query)) ||
+      (contact.relationship && contact.relationship.toLowerCase().includes(query))
     )
   })
 
-  const handleDelete = (id: string) => {
-    setSelectedContact(parseInt(id))
+  const handleDelete = (id: number) => {
+    setSelectedContact(id)
     setDeleteDialogOpen(true)
   }
 
@@ -70,22 +73,23 @@ export default function ContactsPage() {
     }
   }
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Contact>[] = [
     {
       accessorKey: "type",
       header: "Type",
-      cell: (row) => <Badge variant="secondary">{row.type}</Badge>,
+      cell: (row) => <Badge variant="secondary">{row.type || row.relationship || 'N/A'}</Badge>,
     },
     {
       accessorKey: "recipient",
       header: "Recipient",
+      cell: (row) => row.recipient || 'N/A',
     },
     {
-      accessorKey: "firstName",
+      accessorKey: "name",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {row.firstName} {row.middleName} {row.lastName}
+          {row.name || `${row.firstName} ${row.middleName || ''} ${row.lastName}`}
         </div>
       ),
     },
@@ -96,6 +100,7 @@ export default function ContactsPage() {
     {
       accessorKey: "phone",
       header: "Phone",
+      cell: (row) => row.phone || row.phoneNumber || 'N/A',
     },
     {
       accessorKey: "createdDate",
@@ -209,7 +214,7 @@ export default function ContactsPage() {
               </div>
             ) : (
               <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-                {filteredContacts.map((contact: any) => (
+                {filteredContacts.map((contact: Contact) => (
               <Card
                 key={contact.id}
                 className="group relative overflow-hidden transition-all hover:shadow-lg"
@@ -217,7 +222,7 @@ export default function ContactsPage() {
                 {/* Type Badge */}
                 <div className="absolute right-4 top-4 z-10">
                   <Badge variant="secondary" className="shadow-sm">
-                    {contact.type || contact.relationship}
+                    {contact.type || contact.relationship || 'N/A'}
                   </Badge>
                 </div>
 
@@ -229,8 +234,7 @@ export default function ContactsPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-xl font-semibold">
-                        {contact.firstName} {contact.middleName || ''}{" "}
-                        {contact.lastName}
+                        {contact.name || `${contact.firstName} ${contact.middleName || ''} ${contact.lastName}`}
                       </h3>
                       <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                         <IconUser className="h-4 w-4" />
@@ -258,7 +262,7 @@ export default function ContactsPage() {
                     <div className="flex items-center gap-3">
                       <IconCalendar className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground text-sm">
-                        Created: {contact.createdDate || new Date(contact.createdAt).toLocaleDateString()}
+                        Created: {contact.createdDate ? new Date(contact.createdDate).toLocaleDateString() : (contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'N/A')}
                       </span>
                     </div>
                   </div>

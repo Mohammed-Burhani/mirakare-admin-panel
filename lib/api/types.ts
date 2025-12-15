@@ -466,19 +466,29 @@ export interface GraphData {
 }
 
 /**
- * Contact interface
+ * Contact interface - based on /contact/ka/list response
  */
 export interface Contact {
-  id: string
-  firstName: string
-  lastName: string
-  email?: string
+  id: number
+  name: string
+  phone: string
+  email: string
+  recipient: string
+  type: string
+  profileImage: string | null
+  createdDate: string
+  // Legacy fields for backward compatibility
+  firstName?: string
+  lastName?: string
+  middleName?: string
   phoneNumber?: string
-  relationship: string
-  isEmergencyContact: boolean
-  userId: string
-  createdAt: string
-  updatedAt: string
+  relationship?: string
+  isEmergencyContact?: boolean
+  userId?: string
+  createdAt?: string
+  updatedAt?: string
+  city?: string
+  state?: string
 }
 
 /**

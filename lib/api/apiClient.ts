@@ -24,7 +24,11 @@ export const apiClient = Object.assign(httpClient, {
 
   // Contacts
   getContacts: async () => {
-    const response = await httpClient.post<Contact[]>('/contact/list', {})
+    const response = await httpClient.post<Contact[]>('/contact/ka/list', {
+      subId: null,
+      userId: null,
+      recipientId: null
+    })
     return response.data || []
   },
 
