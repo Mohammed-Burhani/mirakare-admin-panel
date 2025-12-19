@@ -3,7 +3,7 @@
 import { use } from "react"
 import Container from "@/components/layout/container"
 import { KareViewerForm } from "@/components/kare-viewer-form"
-import { useKareViewers } from "@/lib/hooks/useKareViewers"
+import { useKareViewer } from "@/lib/hooks/useKareViewers"
 import { IconLoader } from "@tabler/icons-react"
 
 export default function EditKareViewerPage({
@@ -12,9 +12,8 @@ export default function EditKareViewerPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { data: viewers = [], isLoading, error } = useKareViewers()
-  
-  const viewer = viewers.find(v => v.id === id)
+  const viewerId = parseInt(id)
+  const { data: viewer, isLoading, error } = useKareViewer(viewerId)
 
   if (isLoading) {
     return (
@@ -37,9 +36,28 @@ export default function EditKareViewerPage({
     )
   }
 
+  // Map API response fields to form field names
+  const initialValues = {
+    id: viewer.id,
+    recipient: '', // This field might need to be mapped differently based on actual API response
+    relationship: '',
+    firstName: viewer.fname || '',
+    middleName: viewer.mname || '',
+    lastName: viewer.lname || '',
+    mobile: viewer.mobile || '',
+    email: viewer.email || '',
+    addressLine1: viewer.address1 || '',
+    addressLine2: viewer.address2 || '',
+    city: viewer.city || '',
+    state: viewer.state || '',
+    zipCode: viewer.zipcode || '',
+    country: viewer.country || 'United States',
+    notes: viewer.notes || '',
+  }
+
   return (
     <Container>
-      <KareViewerForm mode="edit" initialValues={viewer} />
+      <KareViewerForm mode="edit" initialValues={initialValues} />
     </Container>
   )
 }

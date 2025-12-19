@@ -18,8 +18,11 @@ import {
   IconMapPin,
   IconNotes,
   IconAddressBook,
+  IconLoader,
 } from "@tabler/icons-react"
 import { useContact } from "@/lib/hooks/useContact"
+import { useKareRecipientsDropdown } from "@/lib/hooks/useKareRecipients"
+import { useMasterValues } from "@/lib/hooks/useMasterValues"
 import { toast } from "sonner"
 
 // Validation Schema
@@ -91,25 +94,78 @@ const defaultValues = {
 
 export function ContactForm({ mode, contactId, initialValues }: ContactFormProps) {
   const router = useRouter()
-  const { data: contacts = [], createContact, updateContact } = useContact()
+  const { createContact, updateContact } = useContact()
+  
+  // Fetch dropdown data
+  const { data: recipients = [], isLoading: recipientsLoading } = useKareRecipientsDropdown()
+  const { data: relationships = [], isLoading: relationshipsLoading } = useMasterValues(3)
+  const { data: contactTypes = [], isLoading: typesLoading } = useMasterValues(4) // Assuming type 4 for contact types
+
+  // Show loading state if we're in edit mode but don't have initial values yet
+  if (mode === "edit" && !initialValues) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <IconLoader className="h-4 w-4 animate-spin" />
+            Loading contact data...
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
         const contactData = {
-          ...values,
-          phoneNumber: values.phone,
-          isEmergencyContact: false,
-          userId: "user1", // Mock user ID
+          id: 0,
+          subscriberId: 0,
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
+          phone: values.phone,
+          email: values.email,
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          recipientId: parseInt(values.recipient) || 0,
+          type: parseInt(values.type) || 0,
+          profileImage: "",
+          relationship: parseInt(values.relationship) || 0,
+          address: `${values.addressLine1 || ""} ${values.addressLine2 || ""}`.trim(),
+          createdDate: new Date().toISOString()
         }
         await createContact.mutateAsync(contactData)
         toast.success("Contact created successfully")
       } else if (mode === "edit" && contactId) {
         const contactData = {
-          ...values,
-          phoneNumber: values.phone,
+          id: contactId,
+          subscriberId: 0,
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
+          phone: values.phone,
+          email: values.email,
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          recipientId: parseInt(values.recipient) || 0,
+          type: parseInt(values.type) || 0,
+          profileImage: "",
+          relationship: parseInt(values.relationship) || 0,
+          address: `${values.addressLine1 || ""} ${values.addressLine2 || ""}`.trim(),
+          createdDate: new Date().toISOString()
         }
-        await updateContact.mutateAsync({ id: contactId, ...contactData })
+        await updateContact.mutateAsync(contactData)
         toast.success("Contact updated successfully")
       }
       router.push("/contacts")
@@ -168,12 +224,17 @@ export function ContactForm({ mode, contactId, initialValues }: ContactFormProps
                     <Field
                       as="select"
                       name="recipient"
+                      disabled={recipientsLoading}
                       className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <option value="">Select Recipient</option>
-                      <option value="Mira Sharma">Mira Sharma</option>
-                      <option value="John Doe">John Doe</option>
-                      <option value="Jane Smith">Jane Smith</option>
+                      <option value="">
+                        {recipientsLoading ? "Loading recipients..." : "Select Recipient"}
+                      </option>
+                      {recipients.map((recipient) => (
+                        <option key={recipient.id} value={recipient.id}>
+                          {recipient.name}
+                        </option>
+                      ))}
                     </Field>
                     <ErrorMessage
                       name="recipient"
@@ -189,14 +250,17 @@ export function ContactForm({ mode, contactId, initialValues }: ContactFormProps
                     <Field
                       as="select"
                       name="relationship"
+                      disabled={relationshipsLoading}
                       className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <option value="">Select Relationship</option>
-                      <option value="Family">Family</option>
-                      <option value="Medical">Medical</option>
-                      <option value="Care Givers">Care Givers</option>
-                      <option value="Friend">Friend</option>
-                      <option value="Other">Other</option>
+                      <option value="">
+                        {relationshipsLoading ? "Loading relationships..." : "Select Relationship"}
+                      </option>
+                      {relationships.map((relationship) => (
+                        <option key={relationship.id} value={relationship.id}>
+                          {relationship.text}
+                        </option>
+                      ))}
                     </Field>
                     <ErrorMessage
                       name="relationship"
@@ -213,15 +277,17 @@ export function ContactForm({ mode, contactId, initialValues }: ContactFormProps
                   <Field
                     as="select"
                     name="type"
+                    disabled={typesLoading}
                     className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="">Select Type</option>
-                    <option value="Family">Family</option>
-                    <option value="Medical">Medical</option>
-                    <option value="Care Givers">Care Givers</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="Professional">Professional</option>
-                    <option value="Other">Other</option>
+                    <option value="">
+                      {typesLoading ? "Loading types..." : "Select Type"}
+                    </option>
+                    {contactTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.text}
+                      </option>
+                    ))}
                   </Field>
                   <ErrorMessage
                     name="type"

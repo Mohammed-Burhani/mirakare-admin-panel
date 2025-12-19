@@ -118,12 +118,29 @@ export function KareRecipientForm({
     try {
       if (mode === "add") {
         const recipientData = {
-          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          id: 0,
+          subscriberId: 0,
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
           gender: values.gender,
           age: parseInt(values.age) || 0,
-          email: values.email,
-          phone: values.phone,
-          relationship: values.relationship,
+          email: values.email || "",
+          phone: values.phone || "",
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          profileImage: "",
+          relationship: 0,
+          about: values.about || "",
+          routines: values.routines || "",
+          preferences: values.preferences || "",
+          medications: values.medications || "",
+          contacts: values.contacts || ""
         }
         await createKareRecipient.mutateAsync(recipientData)
         toast.success("Kare Recipient created successfully")
@@ -131,12 +148,28 @@ export function KareRecipientForm({
         const id = (initialValues as any)?.id
         if (id) {
           const recipientData = {
-            name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+            subscriberId: 0,
+            fname: values.firstName,
+            mname: values.middleName || "",
+            lname: values.lastName,
             gender: values.gender,
             age: parseInt(values.age) || 0,
-            email: values.email,
-            phone: values.phone,
-            relationship: values.relationship,
+            email: values.email || "",
+            phone: values.phone || "",
+            address1: values.addressLine1 || "",
+            address2: values.addressLine2 || "",
+            city: values.city || "",
+            state: values.state || "",
+            zipcode: values.zipCode || "",
+            country: values.country || "United States",
+            notes: values.notes || "",
+            profileImage: "",
+            relationship: 0,
+            about: values.about || "",
+            routines: values.routines || "",
+            preferences: values.preferences || "",
+            medications: values.medications || "",
+            contacts: values.contacts || ""
           }
           await updateKareRecipient.mutateAsync({ id: parseInt(id), ...recipientData })
           toast.success("Kare Recipient updated successfully")

@@ -3,7 +3,7 @@
 import { use } from "react"
 import Container from "@/components/layout/container"
 import { KareRecipientForm } from "@/components/kare-recipient-form"
-import { useKareRecipients } from "@/lib/hooks/useKareRecipients"
+import { useKareRecipient } from "@/lib/hooks/useKareRecipients"
 import { IconLoader } from "@tabler/icons-react"
 
 export default function EditKareRecipientPage({
@@ -12,9 +12,8 @@ export default function EditKareRecipientPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { data: recipients = [], isLoading, error } = useKareRecipients()
-  
-  const recipient = recipients.find(r => r.id === id)
+  const recipientId = parseInt(id)
+  const { data: recipient, isLoading, error } = useKareRecipient(recipientId)
 
   if (isLoading) {
     return (
@@ -37,9 +36,39 @@ export default function EditKareRecipientPage({
     )
   }
 
+  // Parse the name field back to firstName, middleName, lastName
+  const nameParts = (recipient.name || '').split(' ')
+  const firstName = nameParts[0] || ''
+  const lastName = nameParts[nameParts.length - 1] || ''
+  const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : ''
+
+  const initialValues = {
+    id: recipient.id,
+    relationship: recipient.relationship || '',
+    firstName,
+    middleName,
+    lastName,
+    gender: recipient.gender || '',
+    age: recipient.age?.toString() || '',
+    email: recipient.email || '',
+    phone: recipient.phone || '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'United States',
+    notes: '',
+    about: '',
+    routines: '',
+    preferences: '',
+    medications: '',
+    contacts: '',
+  }
+
   return (
     <Container>
-      <KareRecipientForm mode="edit" initialValues={recipient} />
+      <KareRecipientForm mode="edit" initialValues={initialValues} />
     </Container>
   )
 }

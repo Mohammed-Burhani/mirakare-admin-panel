@@ -87,19 +87,40 @@ export function KareGiverForm({ mode, giverId, initialValues }: KareGiverFormPro
     try {
       if (mode === "add") {
         const giverData = {
-          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          id: 0,
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
           email: values.email,
           mobile: values.mobile,
-          recipientId: 0, // Default value based on API response
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          recipientId: 0,
+          relationship: 0
         }
         await createKareGiver.mutateAsync(giverData)
         toast.success("Kare Giver created successfully")
       } else if (mode === "edit" && giverId) {
         const giverData = {
-          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
           email: values.email,
           mobile: values.mobile,
-          recipientId: 0, // Default value based on API response
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          recipientId: 0,
+          relationship: 0
         }
         await updateKareGiver.mutateAsync({ id: giverId, ...giverData })
         toast.success("Kare Giver updated successfully")

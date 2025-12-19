@@ -11,7 +11,10 @@ import {
   CreateKareAdminRequest,
   CreateKareGiverRequest,
   CreateKareViewerRequest,
-  CreateKareRecipientRequest
+  CreateKareRecipientRequest,
+  CreateContactRequest,
+  UpdateContactRequest,
+  MasterValue
 } from './types'
 
 // Export httpClient methods directly
@@ -23,33 +26,43 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   // Contacts
-  getContacts: async () => {
+  getContacts: async (params?: { subId?: number | null; userId?: number | null; recipientId?: number | null }) => {
     const response = await httpClient.post<Contact[]>('/contact/ka/list', {
-      subId: null,
-      userId: null,
-      recipientId: null
+      subId: params?.subId ?? null,
+      userId: params?.userId ?? null,
+      recipientId: params?.recipientId ?? null
     })
     return response.data || []
   },
 
-  createContact: async (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const response = await httpClient.post<Contact>('/contact/create', contact)
+  getContact: async (id: number) => {
+    const response = await httpClient.post<Contact>('/contact/ka/get', id.toString())
     return response.data
   },
 
-  updateContact: async (id: number, contact: Partial<Contact>) => {
-    const response = await httpClient.post<Contact>('/contact/edit', { ...contact, id })
+  createContact: async (contact: CreateContactRequest) => {
+    const response = await httpClient.post<Contact>('/contact/ka/add', contact)
+    return response.data
+  },
+
+  updateContact: async (contact: UpdateContactRequest) => {
+    const response = await httpClient.post<Contact>('/contact/ka/edit', contact)
     return response.data
   },
 
   deleteContact: async (id: number) => {
-    await httpClient.post('/contact/delete', { id })
+    await httpClient.post('/contact/ka/delete', { id })
   },
 
   // Kare Givers
   getKareGivers: async (): Promise<KareGiver[]> => {
     const response = await httpClient.post<KareGiver[]>('/user/kare-admin/kare-giver/list', {})
     return response.data || []
+  },
+
+  getKareGiver: async (id: number): Promise<KareGiver> => {
+    const response = await httpClient.post<KareGiver>('/user/kare-admin/kare-giver/get', { id, rid: null })
+    return response.data
   },
 
   createKareGiver: async (giver: CreateKareGiverRequest): Promise<KareGiver> => {
@@ -72,6 +85,17 @@ export const apiClient = Object.assign(httpClient, {
     return response.data || []
   },
 
+  // Kare Recipients for dropdown (new API)
+  getKareRecipientsForDropdown: async (): Promise<KareRecipient[]> => {
+    const response = await httpClient.post<KareRecipient[]>('/kare-recipient/ka/list', {})
+    return response.data || []
+  },
+
+  getKareRecipient: async (id: number): Promise<KareRecipient> => {
+    const response = await httpClient.get<KareRecipient>(`/kare-recipient/get?id=${id}`)
+    return response.data
+  },
+
   createKareRecipient: async (recipient: CreateKareRecipientRequest): Promise<KareRecipient> => {
     const response = await httpClient.post<KareRecipient>('/kare-recipient/create', recipient)
     return response.data
@@ -92,6 +116,11 @@ export const apiClient = Object.assign(httpClient, {
     return response.data || []
   },
 
+  getKareViewer: async (id: number): Promise<KareViewer> => {
+    const response = await httpClient.post<KareViewer>('/user/kare-admin/viewer/get', { id, rid: null })
+    return response.data
+  },
+
   createKareViewer: async (viewer: CreateKareViewerRequest): Promise<KareViewer> => {
     const response = await httpClient.post<KareViewer>('/user/kare-admin/viewer/add', viewer)
     return response.data
@@ -110,6 +139,11 @@ export const apiClient = Object.assign(httpClient, {
   getKareAdmins: async (): Promise<KareAdmin[]> => {
     const response = await httpClient.post<KareAdmin[]>('/user/org/kare-admin/list', {})
     return response.data || []
+  },
+
+  getKareAdmin: async (id: number): Promise<KareAdmin> => {
+    const response = await httpClient.post<KareAdmin>('/user/org/kare-admin/get', { id, rid: null })
+    return response.data
   },
 
   createKareAdmin: async (admin: CreateKareAdminRequest): Promise<KareAdmin> => {
@@ -190,5 +224,35 @@ export const apiClient = Object.assign(httpClient, {
     await httpClient.post('/revoke-token', {})
     localStorage.removeItem('authToken')
     return { success: true }
+  },
+
+  // Master Values
+  getMasterValues: async (type: number): Promise<MasterValue[]> => {
+    const response = await httpClient.post<MasterValue[]>('/mastervalue/list', { type })
+    return response.data || []
+  },
+
+  // Family Profile
+  getFamilyProfile: async () => {
+    const response = await httpClient.get('/subscriber/profile')
+    return response.data
+  },
+
+  updateFamilyProfile: async (data: {
+    fname: string
+    mname?: string
+    lname: string
+    email: string
+    mobile: string
+    address1?: string
+    address2?: string
+    city?: string
+    state?: string
+    zipcode?: string
+    country?: string
+    notes?: string
+  }) => {
+    const response = await httpClient.post('/subscriber/profile/update', data)
+    return response.data
   },
 })

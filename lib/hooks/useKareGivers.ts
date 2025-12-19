@@ -22,8 +22,9 @@ export const useKareGivers = () => {
   const updateKareGiver = useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<CreateKareGiverRequest>) => 
       apiClient.updateKareGiver(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['kare-givers'] })
+      queryClient.invalidateQueries({ queryKey: ['kare-giver', variables.id] })
     }
   })
 
@@ -40,4 +41,14 @@ export const useKareGivers = () => {
     updateKareGiver,
     deleteKareGiver,
   }
+}
+
+export const useKareGiver = (id: number) => {
+  return useQuery({
+    queryKey: ['kare-giver', id],
+    queryFn: () => apiClient.getKareGiver(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
+  })
 }

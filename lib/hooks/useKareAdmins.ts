@@ -22,8 +22,9 @@ export const useKareAdmins = () => {
   const updateKareAdmin = useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<CreateKareAdminRequest>) => 
       apiClient.updateKareAdmin(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['kare-admins'] })
+      queryClient.invalidateQueries({ queryKey: ['kare-admin', variables.id] })
     }
   })
 
@@ -40,4 +41,13 @@ export const useKareAdmins = () => {
     updateKareAdmin,
     deleteKareAdmin,
   }
+}
+export const useKareAdmin = (id: number) => {
+  return useQuery({
+    queryKey: ['kare-admin', id],
+    queryFn: () => apiClient.getKareAdmin(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
+  })
 }

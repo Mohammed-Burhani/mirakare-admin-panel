@@ -22,8 +22,9 @@ export const useKareViewers = () => {
   const updateKareViewer = useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<CreateKareViewerRequest>) => 
       apiClient.updateKareViewer(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['kare-viewers'] })
+      queryClient.invalidateQueries({ queryKey: ['kare-viewer', variables.id] })
     }
   })
 
@@ -40,4 +41,13 @@ export const useKareViewers = () => {
     updateKareViewer,
     deleteKareViewer,
   }
+}
+export const useKareViewer = (id: number) => {
+  return useQuery({
+    queryKey: ['kare-viewer', id],
+    queryFn: () => apiClient.getKareViewer(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
+  })
 }

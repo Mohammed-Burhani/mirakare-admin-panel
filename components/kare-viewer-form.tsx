@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -20,6 +21,8 @@ import {
   IconEye,
 } from "@tabler/icons-react"
 import { useKareViewers } from "@/lib/hooks/useKareViewers"
+import { useKareRecipientsDropdown } from "@/lib/hooks/useKareRecipients"
+import { useMasterValues } from "@/lib/hooks/useMasterValues"
 import { toast } from "sonner"
 
 // Validation Schema
@@ -88,15 +91,30 @@ const defaultValues = {
 export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
   const router = useRouter()
   const { createKareViewer, updateKareViewer } = useKareViewers()
+  
+  // Fetch dropdown data
+  const { data: recipients = [], isLoading: recipientsLoading } = useKareRecipientsDropdown()
+  const { data: relationships = [], isLoading: relationshipsLoading } = useMasterValues(3)
 
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
         const viewerData = {
-          name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+          id: 0,
+          fname: values.firstName,
+          mname: values.middleName || "",
+          lname: values.lastName,
           email: values.email,
           mobile: values.mobile,
-          recipientId: 0, // Default value based on API response
+          address1: values.addressLine1 || "",
+          address2: values.addressLine2 || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipCode || "",
+          country: values.country || "United States",
+          notes: values.notes || "",
+          recipientId: parseInt(values.recipient) || 0,
+          relationship: parseInt(values.relationship) || 0
         }
         await createKareViewer.mutateAsync(viewerData)
         toast.success("Kare Viewer created successfully")
@@ -104,10 +122,20 @@ export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
         const id = (initialValues as any)?.id
         if (id) {
           const viewerData = {
-            name: `${values.firstName} ${values.middleName ? values.middleName + ' ' : ''}${values.lastName}`.trim(),
+            fname: values.firstName,
+            mname: values.middleName || "",
+            lname: values.lastName,
             email: values.email,
             mobile: values.mobile,
-            recipientId: 0, // Default value based on API response
+            address1: values.addressLine1 || "",
+            address2: values.addressLine2 || "",
+            city: values.city || "",
+            state: values.state || "",
+            zipcode: values.zipCode || "",
+            country: values.country || "United States",
+            notes: values.notes || "",
+            recipientId: parseInt(values.recipient) || 0,
+            relationship: parseInt(values.relationship) || 0
           }
           await updateKareViewer.mutateAsync({ id: parseInt(id), ...viewerData })
           toast.success("Kare Viewer updated successfully")
@@ -168,12 +196,17 @@ export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
                   <Field
                     as="select"
                     name="recipient"
+                    disabled={recipientsLoading}
                     className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="">Select Recipient</option>
-                    <option value="Mira Sharma">Mira Sharma</option>
-                    <option value="John Doe">John Doe</option>
-                    <option value="Jane Smith">Jane Smith</option>
+                    <option value="">
+                      {recipientsLoading ? "Loading recipients..." : "Select Recipient"}
+                    </option>
+                    {recipients.map((recipient) => (
+                      <option key={recipient.id} value={recipient.id}>
+                        {recipient.name}
+                      </option>
+                    ))}
                   </Field>
                   <ErrorMessage
                     name="recipient"
@@ -189,19 +222,17 @@ export function KareViewerForm({ mode, initialValues }: KareViewerFormProps) {
                   <Field
                     as="select"
                     name="relationship"
+                    disabled={relationshipsLoading}
                     className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="">Select Relationship</option>
-                    <option value="Father">Father</option>
-                    <option value="Mother">Mother</option>
-                    <option value="Son">Son</option>
-                    <option value="Daughter">Daughter</option>
-                    <option value="Spouse">Spouse</option>
-                    <option value="Sibling">Sibling</option>
-                    <option value="Grandparent">Grandparent</option>
-                    <option value="Grandchild">Grandchild</option>
-                    <option value="Friend">Friend</option>
-                    <option value="Other">Other</option>
+                    <option value="">
+                      {relationshipsLoading ? "Loading relationships..." : "Select Relationship"}
+                    </option>
+                    {relationships.map((relationship) => (
+                      <option key={relationship.id} value={relationship.id}>
+                        {relationship.text}
+                      </option>
+                    ))}
                   </Field>
                   <ErrorMessage
                     name="relationship"

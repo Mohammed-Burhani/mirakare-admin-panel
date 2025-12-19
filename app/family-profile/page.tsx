@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Container from "@/components/layout/container"
 import { Button } from "@/components/ui/button"
@@ -10,38 +10,113 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { IconArrowLeft, IconEdit, IconDeviceFloppy, IconX, IconUser, IconPhone, IconMail, IconMapPin } from "@tabler/icons-react"
+import { useFamilyProfile, useUpdateFamilyProfile } from "@/lib/hooks/useFamilyProfile"
+import { toast } from "sonner"
+import { LoadingState } from "@/components/loading-state"
+import { ErrorState } from "@/components/error-state"
 
 export default function FamilyProfilePage() {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   
-  const [formData, setFormData] = useState({
-    firstName: "Vikram",
-    middleName: "",
-    lastName: "Sharma",
-    mobile: "9083384030",
-    email: "mkkaregiver@gmail.com",
-    addressLine1: "33 Wood Avenue South Suite 600",
-    addressLine2: "Iselin, NJ, 08830",
-    city: "Iselin",
-    state: "NEW JERSEY",
-    zipCode: "08830",
-    country: "United States",
-    notes: ""
-  })
+  const { data: profileData, isLoading, error, refetch } = useFamilyProfile()
+  const updateProfileMutation = useUpdateFamilyProfile()
+  
+  // Initialize form data from profile data
+  const getInitialFormData = () => {
+    if (profileData) {
+      return {
+        firstName: profileData.fname || "",
+        middleName: profileData.mname || "",
+        lastName: profileData.lname || "",
+        mobile: profileData.mobile || "",
+        email: profileData.email || "",
+        addressLine1: profileData.address1 || "",
+        addressLine2: profileData.address2 || "",
+        city: profileData.city || "",
+        state: profileData.state || "",
+        zipCode: profileData.zipcode || "",
+        country: profileData.country || "",
+        notes: profileData.notes || ""
+      }
+    }
+    return {
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      mobile: "",
+      email: "",
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
+      notes: ""
+    }
+  }
+
+  const [formData, setFormData] = useState(getInitialFormData)
+
+  // Update form data when profile data changes and not editing
+  useEffect(() => {
+    if (profileData && !isEditing) {
+      setFormData(getInitialFormData())
+    }
+  }, [profileData?.id, isEditing]) // Only depend on profile ID to avoid unnecessary updates
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSave = () => {
-    // Save logic here
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        fname: formData.firstName,
+        mname: formData.middleName,
+        lname: formData.lastName,
+        email: formData.email,
+        mobile: formData.mobile,
+        address1: formData.addressLine1,
+        address2: formData.addressLine2,
+        city: formData.city,
+        state: formData.state,
+        zipcode: formData.zipCode,
+        country: formData.country,
+        notes: formData.notes
+      })
+      
+      toast.success("Profile updated successfully!")
+      setIsEditing(false)
+    } catch (error) {
+      toast.error("Failed to update profile. Please try again.")
+      console.error("Update profile error:", error)
+    }
   }
 
   const handleCancel = () => {
     // Reset to original data
+    setFormData(getInitialFormData())
     setIsEditing(false)
+  }
+
+  if (isLoading) {
+    return (
+      <Container>
+        <LoadingState message="Loading family profile..." />
+      </Container>
+    )
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <ErrorState 
+          message="Failed to load family profile" 
+          onRetry={() => refetch()}
+        />
+      </Container>
+    )
   }
 
   return (
@@ -76,9 +151,13 @@ export default function FamilyProfilePage() {
                   <IconX className="h-4 w-4" />
                   Cancel
                 </Button>
-                <Button onClick={handleSave} className="gap-2">
+                <Button 
+                  onClick={handleSave} 
+                  className="gap-2"
+                  disabled={updateProfileMutation.isPending}
+                >
                   <IconDeviceFloppy className="h-4 w-4" />
-                  Save Changes
+                  {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                 </Button>
               </>
             )}

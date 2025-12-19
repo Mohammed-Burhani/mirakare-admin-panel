@@ -3,7 +3,7 @@
 import { use } from "react"
 import Container from "@/components/layout/container"
 import { KareGiverForm } from "@/components/kare-giver-form"
-import { useKareGivers } from "@/lib/hooks/useKareGivers"
+import { useKareGiver } from "@/lib/hooks/useKareGivers"
 import { IconLoader } from "@tabler/icons-react"
 
 export default function EditKareGiverPage({
@@ -13,9 +13,7 @@ export default function EditKareGiverPage({
 }) {
   const { id } = use(params)
   const giverId = parseInt(id)
-  const { data: givers = [], isLoading } = useKareGivers()
-  
-  const giver = givers.find((g: unknown) => g.id === String(giverId))
+  const { data: giver, isLoading, error } = useKareGiver(giverId)
 
   if (isLoading) {
     return (
@@ -30,7 +28,7 @@ export default function EditKareGiverPage({
     )
   }
 
-  if (!giver) {
+  if (error || !giver) {
     return (
       <Container>
         <div className="flex items-center justify-center py-12">
@@ -40,25 +38,29 @@ export default function EditKareGiverPage({
     )
   }
 
+  // Map API response fields to form field names
+  const initialValues = {
+    id: giver.id,
+    firstName: giver.fname || '',
+    middleName: giver.mname || '',
+    lastName: giver.lname || '',
+    mobile: giver.mobile || '',
+    email: giver.email || '',
+    addressLine1: giver.address1 || '',
+    addressLine2: giver.address2 || '',
+    city: giver.city || '',
+    state: giver.state || '',
+    zipCode: giver.zipcode || '',
+    country: giver.country || 'United States',
+    notes: giver.notes || '',
+  }
+
   return (
     <Container>
       <KareGiverForm 
         mode="edit" 
         giverId={giverId}
-        initialValues={{
-          firstName: giver.firstName || '',
-          middleName: giver.middleName || '',
-          lastName: giver.lastName || '',
-          mobile: giver.mobile || giver.phoneNumber || '',
-          email: giver.email || '',
-          addressLine1: giver.addressLine1 || '',
-          addressLine2: giver.addressLine2 || '',
-          city: giver.city || '',
-          state: giver.state || '',
-          zipCode: giver.zipCode || '',
-          country: giver.country || 'United States',
-          notes: giver.notes || '',
-        }} 
+        initialValues={initialValues}
       />
     </Container>
   )

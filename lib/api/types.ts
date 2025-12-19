@@ -466,49 +466,101 @@ export interface GraphData {
 }
 
 /**
- * Contact interface - based on /contact/ka/list response
+ * Contact interface - based on /contact/ka/list and /contact/ka/get response
  */
 export interface Contact {
   id: number
-  name: string
+  subscriberId?: number
+  fname: string
+  mname?: string | null
+  lname: string
   phone: string
   email: string
-  recipient: string
-  type: string
-  profileImage: string | null
+  address1?: string | null
+  address2?: string | null
+  city?: string | null
+  state?: string | null
+  zipcode?: string | null
+  country?: string | null
+  notes?: string | null
+  recipientId?: number
+  type?: number
+  profileImage?: string | null
+  relationship?: number
+  address?: string
   createdDate: string
-  // Legacy fields for backward compatibility
+  // Legacy fields for backward compatibility (from old list response)
+  name?: string
+  recipient?: string
   firstName?: string
   lastName?: string
   middleName?: string
   phoneNumber?: string
-  relationship?: string
   isEmergencyContact?: boolean
   userId?: string
   createdAt?: string
   updatedAt?: string
-  city?: string
-  state?: string
 }
 
 /**
- * Contact creation payload
+ * Contact creation payload - based on /contact/ka/add API
  */
 export interface CreateContactRequest {
-  firstName: string
-  lastName: string
-  email?: string
-  phoneNumber?: string
-  relationship: string
-  isEmergencyContact?: boolean
-  userId: string
+  id: number
+  subscriberId: number
+  fname: string
+  mname: string
+  lname: string
+  phone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  recipientId: number
+  type: number
+  profileImage: string
+  relationship: number
+  address: string
+  createdDate: string
 }
 
 /**
- * Contact update payload
+ * Contact update payload - same structure as create
  */
-export interface UpdateContactRequest extends CreateContactRequest {
-  id: string
+export interface UpdateContactRequest {
+  id: number
+  subscriberId: number
+  fname: string
+  mname: string
+  lname: string
+  phone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  recipientId: number
+  type: number
+  profileImage: string
+  relationship: number
+  address: string
+  createdDate: string
+}
+
+/**
+ * Contact list filter parameters
+ */
+export interface ContactListParams {
+  subId?: number | null
+  userId?: number | null
+  recipientId?: number | null
 }
 
 /**
@@ -538,48 +590,108 @@ export interface ContactFilterParams {
 // =============================================================================
 
 /**
- * Kare Admin interface - based on /user/org/kare-admin/list response
+ * Kare Admin interface - based on actual API response structure
  */
 export interface KareAdmin {
   id: number
-  recipientId: number
-  recipient: string | null
-  name: string
+  fname: string
+  mname: string | null
+  lname: string
   email: string
   mobile: string
-  subscriber: string
+  address1: string | null
+  address2: string | null
+  city: string | null
+  state: string | null
+  zipcode: string | null
+  country: string | null
+  notes: string | null
+  roleId: number
+  userName: string
+  subscriberId: number
+  profileImage: string | null
+  refreshToken: string | null
+  refreshTokenExpiry: string | null
+  relationship: number
+  recipientId: number
+  additionalRoleId: number | null
+  forcePwdChange: boolean
   createdDate: string
-  additionalRole: string | null
+  modifiedDate: string
+  createdBy: number
+  modifiedBy: number
+  subscriptionType: string | null
+  deleted: boolean
 }
 
 /**
- * Kare Giver interface - based on /user/kare-admin/kare-giver/list response
+ * Kare Giver interface - based on actual API response structure
  */
 export interface KareGiver {
   id: number
-  recipientId: number
-  recipient: string | null
-  name: string
+  fname: string
+  mname: string | null
+  lname: string
   email: string
   mobile: string
-  subscriber: string
+  address1: string | null
+  address2: string | null
+  city: string | null
+  state: string | null
+  zipcode: string | null
+  country: string | null
+  notes: string | null
+  roleId: number
+  userName: string
+  subscriberId: number
+  profileImage: string | null
+  refreshToken: string | null
+  refreshTokenExpiry: string | null
+  relationship: number
+  recipientId: number
+  additionalRoleId: number | null
+  forcePwdChange: boolean
   createdDate: string
-  additionalRole: string | null
+  modifiedDate: string
+  createdBy: number
+  modifiedBy: number
+  subscriptionType: string | null
+  deleted: boolean
 }
 
 /**
- * Kare Viewer interface - based on /user/kare-admin/viewer/list response
+ * Kare Viewer interface - based on actual API response structure
  */
 export interface KareViewer {
   id: number
-  recipientId: number
-  recipient: string | null
-  name: string
+  fname: string
+  mname: string | null
+  lname: string
   email: string
   mobile: string
-  subscriber: string | null
+  address1: string | null
+  address2: string | null
+  city: string | null
+  state: string | null
+  zipcode: string | null
+  country: string | null
+  notes: string | null
+  roleId: number
+  userName: string
+  subscriberId: number
+  profileImage: string | null
+  refreshToken: string | null
+  refreshTokenExpiry: string | null
+  relationship: number
+  recipientId: number
+  additionalRoleId: number | null
+  forcePwdChange: boolean
   createdDate: string
-  additionalRole: string | null
+  modifiedDate: string
+  createdBy: number
+  modifiedBy: number
+  subscriptionType: string | null
+  deleted: boolean
 }
 
 /**
@@ -601,53 +713,95 @@ export interface KareRecipient {
 }
 
 /**
- * Create/Update request types for Kare entities
+ * Create/Update request types for Kare entities (based on actual API body structure)
  */
 export interface CreateKareAdminRequest {
-  name: string
+  id: number
+  fname: string
+  mname: string
+  lname: string
   email: string
   mobile: string
-  recipientId?: number
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  recipientId: number
+  relationship: number
 }
 
-export interface UpdateKareAdminRequest extends CreateKareAdminRequest {
-  id: number
-}
+
 
 export interface CreateKareGiverRequest {
-  name: string
+  id: number
+  fname: string
+  mname: string
+  lname: string
   email: string
   mobile: string
-  recipientId?: number
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  recipientId: number
+  relationship: number
 }
 
-export interface UpdateKareGiverRequest extends CreateKareGiverRequest {
-  id: number
-}
+
 
 export interface CreateKareViewerRequest {
-  name: string
+  id: number
+  fname: string
+  mname: string
+  lname: string
   email: string
   mobile: string
-  recipientId?: number
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  recipientId: number
+  relationship: number
 }
 
-export interface UpdateKareViewerRequest extends CreateKareViewerRequest {
-  id: number
-}
+
 
 export interface CreateKareRecipientRequest {
-  name: string
+  id: number
+  subscriberId: number
+  fname: string
+  mname: string
+  lname: string
   gender: string
   age: number
-  email?: string
-  phone?: string
-  relationship?: string
+  email: string
+  phone: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  notes: string
+  profileImage: string
+  relationship: number
+  about: string
+  routines: string
+  preferences: string
+  medications: string
+  contacts: string
 }
 
-export interface UpdateKareRecipientRequest extends CreateKareRecipientRequest {
-  id: number
-}
+
 
 // =============================================================================
 // COMMON UTILITY TYPES
@@ -694,4 +848,53 @@ export interface FileUploadResponse {
   filename: string
   size: number
   mimeType: string
+}
+
+/**
+ * Master Value interface - for dropdown options
+ */
+export interface MasterValue {
+  id: number
+  text: string
+  description: string | null
+  type: number
+  isPublished: boolean
+  createdDate: string
+}
+
+/**
+ * Family Profile interface - for subscriber profile management
+ */
+export interface FamilyProfile {
+  id?: number
+  fname: string
+  mname?: string
+  lname: string
+  email: string
+  mobile: string
+  address1?: string
+  address2?: string
+  city?: string
+  state?: string
+  zipcode?: string
+  country?: string
+  notes?: string
+}
+
+/**
+ * Family Profile update request
+ */
+export interface UpdateFamilyProfileRequest {
+  fname: string
+  mname?: string
+  lname: string
+  email: string
+  mobile: string
+  address1?: string
+  address2?: string
+  city?: string
+  state?: string
+  zipcode?: string
+  country?: string
+  notes?: string
 }
