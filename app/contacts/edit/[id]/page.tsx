@@ -1,16 +1,12 @@
 "use client"
 
-import { use } from "react"
+import { use, Suspense } from "react"
 import Container from "@/components/layout/container"
 import { ContactForm } from "@/components/contact-form"
 import { useContactById } from "@/lib/hooks/useContact"
 import { IconLoader } from "@tabler/icons-react"
 
-export default function EditContactPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function EditContactContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const contactId = parseInt(id)
   const { data: contact, isLoading, error } = useContactById(contactId)
@@ -65,5 +61,26 @@ export default function EditContactPage({
         initialValues={initialValues} 
       />
     </Container>
+  )
+}
+
+export default function EditContactPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <Suspense fallback={
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <IconLoader className="h-4 w-4 animate-spin" />
+            Loading contact...
+          </div>
+        </div>
+      </Container>
+    }>
+      <EditContactContent params={params} />
+    </Suspense>
   )
 }

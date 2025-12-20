@@ -1,16 +1,12 @@
 "use client"
 
-import { use } from "react"
+import { use, Suspense } from "react"
 import Container from "@/components/layout/container"
 import { KareRecipientForm } from "@/components/kare-recipient-form"
 import { useKareRecipient } from "@/lib/hooks/useKareRecipients"
 import { IconLoader } from "@tabler/icons-react"
 
-export default function EditKareRecipientPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function EditKareRecipientContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const recipientId = parseInt(id)
   const { data: recipient, isLoading, error } = useKareRecipient(recipientId)
@@ -70,5 +66,24 @@ export default function EditKareRecipientPage({
     <Container>
       <KareRecipientForm mode="edit" initialValues={initialValues} />
     </Container>
+  )
+}
+
+export default function EditKareRecipientPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <Suspense fallback={
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <IconLoader className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading recipient data...</span>
+        </div>
+      </Container>
+    }>
+      <EditKareRecipientContent params={params} />
+    </Suspense>
   )
 }

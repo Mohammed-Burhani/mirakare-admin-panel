@@ -1,16 +1,12 @@
 "use client"
 
-import { use } from "react"
+import { use, Suspense } from "react"
 import Container from "@/components/layout/container"
 import { KareViewerForm } from "@/components/kare-viewer-form"
 import { useKareViewer } from "@/lib/hooks/useKareViewers"
 import { IconLoader } from "@tabler/icons-react"
 
-export default function EditKareViewerPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function EditKareViewerContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const viewerId = parseInt(id)
   const { data: viewer, isLoading, error } = useKareViewer(viewerId)
@@ -59,5 +55,24 @@ export default function EditKareViewerPage({
     <Container>
       <KareViewerForm mode="edit" initialValues={initialValues} />
     </Container>
+  )
+}
+
+export default function EditKareViewerPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <Suspense fallback={
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <IconLoader className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading viewer data...</span>
+        </div>
+      </Container>
+    }>
+      <EditKareViewerContent params={params} />
+    </Suspense>
   )
 }

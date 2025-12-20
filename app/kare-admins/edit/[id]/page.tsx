@@ -1,16 +1,12 @@
 "use client"
 
-import { use } from "react"
+import { use, Suspense } from "react"
 import Container from "@/components/layout/container"
 import { KareAdminForm } from "@/components/kare-admin-form"
 import { useKareAdmin } from "@/lib/hooks/useKareAdmins"
 import { IconLoader } from "@tabler/icons-react"
 
-export default function EditKareAdminPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function EditKareAdminContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const adminId = parseInt(id)
   const { data: admin, isLoading, error } = useKareAdmin(adminId)
@@ -57,5 +53,24 @@ export default function EditKareAdminPage({
     <Container>
       <KareAdminForm mode="edit" initialValues={initialValues} />
     </Container>
+  )
+}
+
+export default function EditKareAdminPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <Suspense fallback={
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <IconLoader className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading admin data...</span>
+        </div>
+      </Container>
+    }>
+      <EditKareAdminContent params={params} />
+    </Suspense>
   )
 }

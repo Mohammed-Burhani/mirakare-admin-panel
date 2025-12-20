@@ -1,16 +1,12 @@
 "use client"
 
-import { use } from "react"
+import { use, Suspense } from "react"
 import Container from "@/components/layout/container"
 import { KareGiverForm } from "@/components/kare-giver-form"
 import { useKareGiver } from "@/lib/hooks/useKareGivers"
 import { IconLoader } from "@tabler/icons-react"
 
-export default function EditKareGiverPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function EditKareGiverContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const giverId = parseInt(id)
   const { data: giver, isLoading, error } = useKareGiver(giverId)
@@ -63,5 +59,26 @@ export default function EditKareGiverPage({
         initialValues={initialValues}
       />
     </Container>
+  )
+}
+
+export default function EditKareGiverPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <Suspense fallback={
+      <Container>
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <IconLoader className="h-4 w-4 animate-spin" />
+            Loading Kare Giver...
+          </div>
+        </div>
+      </Container>
+    }>
+      <EditKareGiverContent params={params} />
+    </Suspense>
   )
 }
