@@ -15,9 +15,14 @@ import {
   IconUserHeart,
   IconUserPlus,
   IconUsersGroup,
+  IconDatabase,
+  IconUsers,
+  IconPackage,
+  IconChevronRight,
 } from "@tabler/icons-react"
 // import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
+import { NavReports } from "@/components/nav-reports"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -79,6 +84,34 @@ const data = {
       icon: IconTrendingUp,
     },
   ],
+  // System Admin specific modules
+  navMasters: {
+    title: "Masters",
+    icon: IconDatabase,
+    url: "#",
+    items: [
+      {
+        title: "Vital Types",
+        url: "/masters/vital-types",
+      },
+      {
+        title: "Master Values",
+        url: "/masters/master-values",
+      },
+    ],
+  },
+  navSystemAdmin: [
+    {
+      title: "Subscribers",
+      url: "/subscribers",
+      icon: IconUsers,
+    },
+    {
+      title: "Packages",
+      url: "/packages",
+      icon: IconPackage,
+    },
+  ],
   // navReports: {
   //   title: "Reports",
   //   icon: IconChartLine,
@@ -137,7 +170,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.navReports.items} /> */}
+        <NavReports report={data.navMasters} />
+        <NavMain items={data.navSystemAdmin} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
