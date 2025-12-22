@@ -32,7 +32,7 @@ export function FormActions({
           resetForm()
           onCancel()
         }}
-        className="gap-2"
+        className="gap-2 border-muted-foreground/30 hover:bg-muted"
       >
         <IconX className="h-4 w-4" />
         {cancelLabel}
@@ -42,14 +42,14 @@ export function FormActions({
         variant="outline"
         onClick={() => resetForm()}
         disabled={!dirty}
-        className="gap-2"
+        className="gap-2 border-muted-foreground/30 hover:bg-muted"
       >
         Clear
       </Button>
       <Button 
         type="submit" 
         disabled={isSubmitting} 
-        className="gap-2"
+        className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
       >
         <IconDeviceFloppy className="h-4 w-4" />
         {submitLabel || defaultSubmitLabel}

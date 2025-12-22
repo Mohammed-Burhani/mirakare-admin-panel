@@ -132,11 +132,11 @@ const chartConfig = {
   },
   desktop: {
     label: "Desktop",
-    color: "var(--primary)",
+    color: "#55c1e7",
   },
   mobile: {
     label: "Mobile",
-    color: "var(--primary)",
+    color: "#041623",
   },
 } satisfies ChartConfig
 
@@ -210,67 +210,67 @@ export function ChartAreaInteractive() {
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <div className="mb-6 grid grid-cols-2 gap-3 px-4 text-sm md:grid-cols-4">
-          <div className="space-y-1 rounded-lg border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 p-3 dark:border-red-900 dark:from-red-950 dark:to-red-900/50">
-            <div className="text-xs font-medium text-red-600 dark:text-red-400">
+          <div className="space-y-1 rounded-lg border border-slate-300 bg-gradient-to-br from-slate-100 to-slate-200/50 p-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-700/50">
+            <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
               Heart Rate
             </div>
-            <div className="text-xl font-bold text-red-700 dark:text-red-300">
+            <div className="text-xl font-bold text-slate-700 dark:text-slate-300">
               415,954
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 p-3 dark:border-purple-900 dark:from-purple-950 dark:to-purple-900/50">
-            <div className="text-xs font-medium text-purple-600 dark:text-purple-400">
+          <div className="space-y-1 rounded-lg border border-sky-300 bg-gradient-to-br from-sky-100 to-sky-200/50 p-3 dark:border-sky-700 dark:from-sky-900 dark:to-sky-800/50">
+            <div className="text-xs font-medium text-sky-600 dark:text-sky-400">
               Blood Pressure
             </div>
-            <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+            <div className="text-xl font-bold text-sky-700 dark:text-sky-300">
               60
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 p-3 dark:border-green-900 dark:from-green-950 dark:to-green-900/50">
-            <div className="text-xs font-medium text-green-600 dark:text-green-400">
+          <div className="space-y-1 rounded-lg border border-slate-300 bg-gradient-to-br from-slate-100 to-slate-200/50 p-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-700/50">
+            <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
               Steps
             </div>
-            <div className="text-xl font-bold text-green-700 dark:text-green-300">
+            <div className="text-xl font-bold text-slate-700 dark:text-slate-300">
               740
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 p-3 dark:border-blue-900 dark:from-blue-950 dark:to-blue-900/50">
-            <div className="text-xs font-medium text-blue-600 dark:text-blue-400">
+          <div className="space-y-1 rounded-lg border border-sky-300 bg-gradient-to-br from-sky-100 to-sky-200/50 p-3 dark:border-sky-700 dark:from-sky-900 dark:to-sky-800/50">
+            <div className="text-xs font-medium text-sky-600 dark:text-sky-400">
               Oxygen Level
             </div>
-            <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+            <div className="text-xl font-bold text-sky-700 dark:text-sky-300">
               162,406
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-teal-200 bg-gradient-to-br from-teal-50 to-teal-100/50 p-3 dark:border-teal-900 dark:from-teal-950 dark:to-teal-900/50">
-            <div className="text-xs font-medium text-teal-600 dark:text-teal-400">
+          <div className="space-y-1 rounded-lg border border-slate-300 bg-gradient-to-br from-slate-100 to-slate-200/50 p-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-700/50">
+            <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
               Breathing Rate
             </div>
-            <div className="text-xl font-bold text-teal-700 dark:text-teal-300">
+            <div className="text-xl font-bold text-slate-700 dark:text-slate-300">
               10,354
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 dark:border-orange-900 dark:from-orange-950 dark:to-orange-900/50">
-            <div className="text-xs font-medium text-orange-600 dark:text-orange-400">
+          <div className="space-y-1 rounded-lg border border-sky-300 bg-gradient-to-br from-sky-100 to-sky-200/50 p-3 dark:border-sky-700 dark:from-sky-900 dark:to-sky-800/50">
+            <div className="text-xs font-medium text-sky-600 dark:text-sky-400">
               Temperature
             </div>
-            <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+            <div className="text-xl font-bold text-sky-700 dark:text-sky-300">
               120
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 p-3 dark:border-pink-900 dark:from-pink-950 dark:to-pink-900/50">
-            <div className="text-xs font-medium text-pink-600 dark:text-pink-400">
+          <div className="space-y-1 rounded-lg border border-slate-300 bg-gradient-to-br from-slate-100 to-slate-200/50 p-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-700/50">
+            <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
               Glucose
             </div>
-            <div className="text-xl font-bold text-pink-700 dark:text-pink-300">
+            <div className="text-xl font-bold text-slate-700 dark:text-slate-300">
               0
             </div>
           </div>
-          <div className="space-y-1 rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100/50 p-3 dark:border-indigo-900 dark:from-indigo-950 dark:to-indigo-900/50">
-            <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+          <div className="space-y-1 rounded-lg border border-sky-300 bg-gradient-to-br from-sky-100 to-sky-200/50 p-3 dark:border-sky-700 dark:from-sky-900 dark:to-sky-800/50">
+            <div className="text-xs font-medium text-sky-600 dark:text-sky-400">
               Weight
             </div>
-            <div className="text-xl font-bold text-indigo-700 dark:text-indigo-300">
+            <div className="text-xl font-bold text-sky-700 dark:text-sky-300">
               15
             </div>
           </div>

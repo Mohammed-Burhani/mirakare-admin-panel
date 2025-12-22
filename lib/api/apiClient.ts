@@ -51,7 +51,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteContact: async (id: number) => {
-    await httpClient.post('/contact/ka/delete', { id })
+    await httpClient.post('/contact/ka/delete', id)
   },
 
   // Kare Givers
@@ -76,7 +76,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteKareGiver: async (id: number): Promise<void> => {
-    await httpClient.post('/user/kare-admin/kare-giver/delete', { id })
+    await httpClient.post('/user/kare-admin/kare-giver/delete', id )
   },
 
   // Kare Recipients
@@ -107,7 +107,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteKareRecipient: async (id: number): Promise<void> => {
-    await httpClient.post('/kare-recipient/delete', { id })
+    await httpClient.post('/kare-recipient/delete', id )
   },
 
   // Kare Viewers
@@ -132,7 +132,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteKareViewer: async (id: number): Promise<void> => {
-    await httpClient.post('/user/kare-admin/viewer/delete', { id })
+    await httpClient.post('/user/kare-admin/viewer/delete', id)
   },
 
   // Kare Admins
@@ -157,7 +157,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteKareAdmin: async (id: number): Promise<void> => {
-    await httpClient.post('/user/org/kare-admin/delete', { id })
+    await httpClient.post('/user/org/kare-admin/delete', id)
   },
 
   // Calendar
@@ -177,7 +177,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteCalendarEvent: async (id: number) => {
-    await httpClient.post('/journal/delete-event', { id })
+    await httpClient.post('/journal/delete-event', id)
   },
 
   // Journal
@@ -197,7 +197,7 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   deleteJournalEntry: async (id: number) => {
-    await httpClient.post('/journal/delete-note', { id })
+    await httpClient.post('/journal/delete-note', id)
   },
 
   // Graph

@@ -158,11 +158,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:p-1.5! bg-muted border"
+              className="data-[slot=sidebar-menu-button]:p-1.5! bg-primary/10 border border-primary/20 hover:bg-primary/20"
             >
               <Link href="/">
                 <IconActivity className="size-5! text-primary" />
-                <span className="text-base font-semibold">MiraKare</span>
+                <span className="text-base font-semibold text-primary">MiraKare</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -29,7 +29,7 @@ export function ProfileCard({
 }: ProfileCardProps) {
   return (
     <Card
-      className="group relative overflow-hidden transition-all hover:shadow-lg"
+      className="group relative overflow-hidden transition-all hover:shadow-lg border-primary/20 hover:border-primary/40"
       onClick={onClick}
     >
       {badge && (
@@ -43,7 +43,7 @@ export function ProfileCard({
       <CardContent className="p-6">
         {/* Profile Section */}
         <div className="mb-4 flex items-start gap-4">
-          <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-full">
+          <div className="bg-primary/15 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-primary/20">
             {icon}
           </div>
           <div className="min-w-0 flex-1">
