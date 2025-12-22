@@ -1,22 +1,16 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Formik, Form, Field, ErrorMessage } from "formik"
+import { Formik, Form } from "formik"
 import * as Yup from "yup"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import {
-  FormSectionCard,
-} from "@/components/form-section-accordion"
-import {
-  IconArrowLeft,
-  IconDeviceFloppy,
-  IconX,
-  IconActivity,
-} from "@tabler/icons-react"
+import { IconActivity } from "@tabler/icons-react"
 import { useVitalTypes } from "@/lib/hooks/useVitalTypes"
 import { toast } from "sonner"
+import { FormHeader } from "@/components/form/form-header"
+import { FormSection } from "@/components/form/form-section"
+import { FormField } from "@/components/form/form-field"
+import { FormSwitch } from "@/components/form/form-field"
+import { FormActions } from "@/components/form/form-actions"
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -52,22 +46,12 @@ export function VitalTypeForm({ mode, initialValues }: VitalTypeFormProps) {
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
-        const vitalTypeData = {
-          name: values.name,
-          providerName: values.providerName,
-          isActive: values.isActive,
-        }
-        await createVitalType.mutateAsync(vitalTypeData)
+        await createVitalType.mutateAsync(values)
         toast.success("Vital Type created successfully")
       } else {
         const id = (initialValues as any)?.id
         if (id) {
-          const vitalTypeData = {
-            name: values.name,
-            providerName: values.providerName,
-            isActive: values.isActive,
-          }
-          await updateVitalType.mutateAsync({ id: parseInt(id), ...vitalTypeData })
+          await updateVitalType.mutateAsync({ id: parseInt(id), ...values })
           toast.success("Vital Type updated successfully")
         }
       }
@@ -80,27 +64,11 @@ export function VitalTypeForm({ mode, initialValues }: VitalTypeFormProps) {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => router.back()}
-          className="h-9 w-9"
-        >
-          <IconArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {mode === "add" ? "Add New Vital Type" : "Edit Vital Type"}
-          </h1>
-          <p className="text-muted-foreground">
-            {mode === "add"
-              ? "Create a new vital sign type"
-              : "Update vital type information"}
-          </p>
-        </div>
-      </div>
+      <FormHeader
+        title={mode === "add" ? "Add New Vital Type" : "Edit Vital Type"}
+        description={mode === "add" ? "Create a new vital sign type" : "Update vital type information"}
+        onBack={() => router.back()}
+      />
 
       <Formik
         initialValues={initialValues || defaultValues}
@@ -108,92 +76,39 @@ export function VitalTypeForm({ mode, initialValues }: VitalTypeFormProps) {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ isSubmitting, dirty, resetForm, values, setFieldValue }) => (
+        {({ isSubmitting }) => (
           <Form className="flex flex-col gap-6">
-            {/* Vital Type Information Card */}
-            <FormSectionCard
+            <FormSection
               title="Vital Type Information"
-              icon={IconActivity}
               description="Basic vital type details (* Required fields)"
+              icon={<IconActivity className="h-5 w-5 text-primary" />}
+              highlight
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">
-                    Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Field
-                    name="name"
-                    type="text"
-                    placeholder="Enter vital type name"
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <ErrorMessage
-                    name="name"
-                    component="p"
-                    className="text-destructive text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="providerName">
-                    Provider Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Field
-                    name="providerName"
-                    type="text"
-                    placeholder="Enter provider name"
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <ErrorMessage
-                    name="providerName"
-                    component="p"
-                    className="text-destructive text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="isActive"
-                  checked={values.isActive}
-                  onCheckedChange={(checked) => setFieldValue("isActive", checked)}
+                <FormField
+                  name="name"
+                  label="Name"
+                  placeholder="Enter vital type name"
+                  required
                 />
-                <Label htmlFor="isActive">Active</Label>
+                <FormField
+                  name="providerName"
+                  label="Provider Name"
+                  placeholder="Enter provider name"
+                  required
+                />
               </div>
-            </FormSectionCard>
+              <FormSwitch
+                name="isActive"
+                label="Active"
+              />
+            </FormSection>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  resetForm()
-                  router.back()
-                }}
-                className="gap-2"
-              >
-                <IconX className="h-4 w-4" />
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => resetForm()}
-                disabled={!dirty}
-                className="gap-2"
-              >
-                Clear
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting || createVitalType.isPending || updateVitalType.isPending} 
-                className="gap-2"
-              >
-                <IconDeviceFloppy className="h-4 w-4" />
-                {mode === "add" ? "Add" : "Save Changes"}
-              </Button>
-            </div>
+            <FormActions
+              mode={mode}
+              onCancel={() => router.back()}
+              isSubmitting={isSubmitting || createVitalType.isPending || updateVitalType.isPending}
+            />
           </Form>
         )}
       </Formik>
