@@ -10,8 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   IconPlus,
   IconSearch,
-  IconEdit,
-  IconTrash,
   IconMail,
   IconPhone,
   IconCalendar,
@@ -30,37 +28,38 @@ import {
 } from "@/components/ui/dialog"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
+import { ActionButtons } from "@/components/action-buttons"
 import { useKareViewers } from "@/lib/hooks/useKareViewers"
+import { KareViewer } from "@/lib/api/types"
+import { Module } from "@/lib/utils/permissions"
+import { usePermissions, PermissionGuard } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
-interface Viewer {
-  id: number
-  recipientId: number
-  recipient: string | null
-  name: string
-  email: string
-  mobile: string
-  subscriber: string | null
-  createdDate: string
-  additionalRole: string | null
+export default function KareViewersPage() {
+  return (
+    <PermissionGuard module={Module.KARE_VIEWERS}>
+      <KareViewersPageContent />
+    </PermissionGuard>
+  )
 }
 
-export default function KareViewersPage() {
+function KareViewersPageContent() {
   const router = useRouter()
   const { data: viewers = [], isLoading, error, deleteKareViewer } = useKareViewers()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedViewer, setSelectedViewer] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
+  const { canCreate } = usePermissions(Module.KARE_VIEWERS)
 
-  const filteredViewers = (viewers as Viewer[]).filter((viewer) => {
+  const filteredViewers = viewers.filter((viewer: KareViewer) => {
     const query = searchQuery.toLowerCase()
+    const name = `${viewer.fname} ${viewer.lname}`.trim()
+    
     return (
-      (viewer.name && viewer.name.toLowerCase().includes(query)) ||
+      (name && name.toLowerCase().includes(query)) ||
       (viewer.email && viewer.email.toLowerCase().includes(query)) ||
-      (viewer.mobile && viewer.mobile.includes(query)) ||
-      (viewer.recipient && viewer.recipient.toLowerCase().includes(query)) ||
-      (viewer.subscriber && viewer.subscriber.toLowerCase().includes(query))
+      (viewer.mobile && viewer.mobile.includes(query))
     )
   })
 
@@ -93,20 +92,19 @@ export default function KareViewersPage() {
     )
   }
 
-  const columns: ColumnDef<Viewer>[] = [
+  const columns: ColumnDef<KareViewer>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "fname",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {row.name}
+          {`${row.fname} ${row.lname}`.trim()}
         </div>
       ),
     },
     {
-      accessorKey: "recipient",
-      header: "Recipient",
-      cell: (row) => row.recipient || 'N/A',
+      accessorKey: "recipientId",
+      header: "Recipient ID",
     },
     {
       accessorKey: "email",
@@ -117,9 +115,8 @@ export default function KareViewersPage() {
       header: "Mobile",
     },
     {
-      accessorKey: "subscriber",
-      header: "Subscriber",
-      cell: (row) => row.subscriber || 'N/A',
+      accessorKey: "subscriberId",
+      header: "Subscriber ID",
     },
     {
       accessorKey: "createdDate",
@@ -129,29 +126,12 @@ export default function KareViewersPage() {
     {
       header: "Actions",
       cell: (row) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/kare-viewers/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id.toString())
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
-        </div>
+        <ActionButtons
+          module={Module.KARE_VIEWERS}
+          onEdit={() => router.push(`/kare-viewers/edit/${row.id}`)}
+          onDelete={() => handleDelete(row.id.toString())}
+          layout="horizontal"
+        />
       ),
     },
   ]
@@ -172,13 +152,15 @@ export default function KareViewersPage() {
             </div>
             <div className="flex items-center gap-2">
               <ViewToggle view={view} onViewChange={setView} />
-              <Button
-                onClick={() => router.push("/kare-viewers/add")}
-                className="gap-2"
-              >
-                <IconPlus className="h-4 w-4" />
-                Add New
-              </Button>
+              {canCreate && (
+                <Button
+                  onClick={() => router.push("/kare-viewers/add")}
+                  className="gap-2"
+                >
+                  <IconPlus className="h-4 w-4" />
+                  Add New
+                </Button>
+              )}
             </div>
           </div>
 
@@ -226,7 +208,9 @@ export default function KareViewersPage() {
               </div>
             ) : (
               <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-                {filteredViewers.map((viewer) => (
+                {filteredViewers.map((viewer: KareViewer) => {
+                  const name = `${viewer.fname} ${viewer.lname}`.trim()
+                  return (
               <Card
                 key={viewer.id}
                 className="group relative overflow-hidden transition-all hover:shadow-lg"
@@ -234,7 +218,7 @@ export default function KareViewersPage() {
                 {/* Recipient Badge */}
                 <div className="absolute right-4 top-4 z-10">
                   <Badge variant="secondary" className="shadow-sm">
-                    {viewer.recipient || 'No Recipient'}
+                    Recipient ID: {viewer.recipientId}
                   </Badge>
                 </div>
 
@@ -246,11 +230,11 @@ export default function KareViewersPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-xl font-semibold">
-                        {viewer.name}
+                        {name}
                       </h3>
                       <div className="text-muted-foreground mt-1 flex items-center gap-1 text-sm">
                         <IconUser className="h-4 w-4" />
-                        <span>Viewing: {viewer.recipient || 'N/A'}</span>
+                        <span>Recipient ID: {viewer.recipientId}</span>
                       </div>
                     </div>
                   </div>
@@ -268,7 +252,7 @@ export default function KareViewersPage() {
                     <div className="flex items-center gap-3">
                       <IconUser className="text-muted-foreground h-4 w-4 shrink-0" />
                       <span className="text-muted-foreground truncate text-sm">
-                        Subscriber: {viewer.subscriber || 'N/A'}
+                        Subscriber ID: {viewer.subscriberId}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -280,31 +264,17 @@ export default function KareViewersPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="mt-4 flex gap-2 border-t pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-2"
-                      onClick={() =>
-                        router.push(`/kare-viewers/edit/${viewer.id}`)
-                      }
-                    >
-                      <IconEdit className="h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleDelete(viewer.id.toString())}
-                    >
-                      <IconTrash className="h-4 w-4" />
-                      Delete
-                    </Button>
+                  <div className="mt-4 border-t pt-4">
+                    <ActionButtons
+                      module={Module.KARE_VIEWERS}
+                      onEdit={() => router.push(`/kare-viewers/edit/${viewer.id}`)}
+                      onDelete={() => handleDelete(viewer.id.toString())}
+                    />
                   </div>
                 </CardContent>
               </Card>
-                ))}
+                  )
+                })}
               </div>
             )}
           </>
@@ -322,7 +292,7 @@ export default function KareViewersPage() {
                 ? "Try adjusting your search query"
                 : "Get started by adding a new viewer"}
             </p>
-            {!searchQuery && (
+            {!searchQuery && canCreate && (
               <Button
                 onClick={() => router.push("/kare-viewers/add")}
                 className="mt-4 gap-2"

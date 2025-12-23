@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   IconPlus,
-  IconEdit,
-  IconTrash,
   IconShieldCheck,
   IconMail,
   IconPhone,
@@ -26,38 +24,35 @@ import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
+import { KareAdmin } from "@/lib/api/types"
 import { Module } from "@/lib/utils/permissions"
-import { usePermissions } from "@/components/auth/PermissionGuard"
+import { usePermissions, PermissionGuard } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
-interface Admin {
-  id: number
-  recipientId: number
-  recipient: string | null
-  name: string
-  email: string
-  mobile: string
-  subscriber: string
-  createdDate: string
-  additionalRole: string | null
+export default function KareAdminsPage() {
+  return (
+    <PermissionGuard module={Module.KARE_ADMINS}>
+      <KareAdminsPageContent />
+    </PermissionGuard>
+  )
 }
 
-export default function KareAdminsPage() {
+function KareAdminsPageContent() {
   const router = useRouter()
   const { data: admins = [], isLoading, deleteKareAdmin } = useKareAdmins()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
-  const { canCreate, canUpdate, canDelete } = usePermissions(Module.KARE_ADMINS)
+  const { canCreate } = usePermissions(Module.KARE_ADMINS)
 
-  const filteredAdmins = (admins as Admin[]).filter((admin) => {
+  const filteredAdmins = admins.filter((admin: KareAdmin) => {
     const query = searchQuery.toLowerCase()
+    const name = `${admin.fname} ${admin.lname}`.trim()
     return (
-      (admin.name && admin.name.toLowerCase().includes(query)) ||
+      (name && name.toLowerCase().includes(query)) ||
       (admin.email && admin.email.toLowerCase().includes(query)) ||
-      (admin.mobile && admin.mobile.includes(query)) ||
-      (admin.subscriber && admin.subscriber.toLowerCase().includes(query))
+      (admin.mobile && admin.mobile.includes(query))
     )
   })
 
@@ -80,13 +75,13 @@ export default function KareAdminsPage() {
     }
   }
 
-  const columns: ColumnDef<Admin>[] = [
+  const columns: ColumnDef<KareAdmin>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "fname",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {row.name}
+          {`${row.fname} ${row.lname}`.trim()}
         </div>
       ),
     },
@@ -99,20 +94,19 @@ export default function KareAdminsPage() {
       header: "Mobile",
     },
     {
-      accessorKey: "subscriber",
-      header: "Subscriber",
+      accessorKey: "subscriberId",
+      header: "Subscriber ID",
     },
     {
-      accessorKey: "recipient",
-      header: "Recipient",
-      cell: (row) => row.recipient || 'N/A',
+      accessorKey: "recipientId",
+      header: "Recipient ID",
     },
     {
-      accessorKey: "additionalRole",
+      accessorKey: "additionalRoleId",
       header: "Additional Role",
       cell: (row) => (
-        <Badge variant={row.additionalRole ? "default" : "secondary"}>
-          {row.additionalRole || 'None'}
+        <Badge variant={row.additionalRoleId ? "default" : "secondary"}>
+          {row.additionalRoleId || 'None'}
         </Badge>
       ),
     },
@@ -124,33 +118,12 @@ export default function KareAdminsPage() {
     {
       header: "Actions",
       cell: (row) => (
-        <div className="flex gap-2">
-          {canUpdate && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                router.push(`/kare-admins/edit/${row.id}`)
-              }}
-            >
-              <IconEdit className="h-4 w-4" />
-            </Button>
-          )}
-          {canDelete && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDelete(row.id.toString())
-              }}
-              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <IconTrash className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        <ActionButtons
+          module={Module.KARE_ADMINS}
+          onEdit={() => router.push(`/kare-admins/edit/${row.id}`)}
+          onDelete={() => handleDelete(row.id.toString())}
+          layout="horizontal"
+        />
       ),
     },
   ]
@@ -202,16 +175,16 @@ export default function KareAdminsPage() {
               <ProfileCard
                 key={admin.id}
                 icon={<IconShieldCheck className="text-primary h-8 w-8" />}
-                title={admin.name}
+                title={`${admin.fname} ${admin.lname}`.trim()}
                 subtitle={
                   <div className="flex items-center gap-1">
                     <IconUser className="h-4 w-4" />
-                    <span>{admin.subscriber}</span>
+                    <span>Subscriber ID: {admin.subscriberId}</span>
                   </div>
                 }
                 badge={{
-                  label: admin.additionalRole || 'Admin',
-                  variant: admin.additionalRole ? "default" : "secondary",
+                  label: admin.additionalRoleId ? `Role: ${admin.additionalRoleId}` : 'Admin',
+                  variant: admin.additionalRoleId ? "default" : "secondary",
                 }}
                 contactInfo={[
                   {
@@ -224,7 +197,7 @@ export default function KareAdminsPage() {
                   },
                   {
                     icon: <IconUser className="h-4 w-4" />,
-                    label: `Recipient: ${admin.recipient || 'N/A'}`,
+                    label: `Recipient ID: ${admin.recipientId}`,
                   },
                   {
                     icon: <IconCalendar className="h-4 w-4" />,

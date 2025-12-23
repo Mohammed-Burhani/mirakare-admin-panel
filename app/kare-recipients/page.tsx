@@ -32,11 +32,22 @@ import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
 import { ManageKareGiversDialog } from "@/components/manage-kare-givers-dialog"
 import { QuickJournalingDialog } from "@/components/quick-journaling-dialog"
+import { ActionButtons } from "@/components/action-buttons"
 import { useKareRecipients } from "@/lib/hooks/useKareRecipients"
 import { KareRecipient } from "@/lib/api/types"
+import { Module } from "@/lib/utils/permissions"
+import { usePermissions, PermissionGuard } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
 export default function KareRecipientsPage() {
+  return (
+    <PermissionGuard module={Module.KARE_RECIPIENTS}>
+      <KareRecipientsPageContent />
+    </PermissionGuard>
+  )
+}
+
+function KareRecipientsPageContent() {
   const router = useRouter()
   const { data: recipients = [], isLoading, error, deleteKareRecipient } = useKareRecipients()
   const [searchQuery, setSearchQuery] = useState("")
@@ -48,6 +59,7 @@ export default function KareRecipientsPage() {
   const [manageGiversOpen, setManageGiversOpen] = useState(false)
   const [journalingOpen, setJournalingOpen] = useState(false)
   const [selectedRecipientName, setSelectedRecipientName] = useState("")
+  const { canCreate, canUpdate, canDelete } = usePermissions(Module.KARE_RECIPIENTS)
 
   const filteredRecipients = recipients.filter((recipient: KareRecipient) => {
     const query = searchQuery.toLowerCase()
@@ -142,29 +154,12 @@ export default function KareRecipientsPage() {
     {
       header: "Actions",
       cell: (row) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/kare-recipients/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id)
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
-        </div>
+        <ActionButtons
+          module={Module.KARE_RECIPIENTS}
+          onEdit={() => router.push(`/kare-recipients/edit/${row.id}`)}
+          onDelete={() => handleDelete(row.id)}
+          layout="horizontal"
+        />
       ),
     },
   ]
@@ -185,13 +180,15 @@ export default function KareRecipientsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <ViewToggle view={view} onViewChange={setView} />
-              <Button
-                onClick={() => router.push("/kare-recipients/add")}
-                className="gap-2"
-              >
-                <IconPlus className="h-4 w-4" />
-                Add New
-              </Button>
+              {canCreate && (
+                <Button
+                  onClick={() => router.push("/kare-recipients/add")}
+                  className="gap-2"
+                >
+                  <IconPlus className="h-4 w-4" />
+                  Add New
+                </Button>
+              )}
             </div>
           </div>
 
@@ -329,26 +326,30 @@ export default function KareRecipientsPage() {
                       </Button>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 gap-2"
-                        onClick={() =>
-                          router.push(`/kare-recipients/edit/${recipient.id}`)
-                        }
-                      >
-                        <IconEdit className="h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => handleDelete(recipient.id)}
-                      >
-                        <IconTrash className="h-4 w-4" />
-                        Delete
-                      </Button>
+                      {canUpdate && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 gap-2"
+                          onClick={() =>
+                            router.push(`/kare-recipients/edit/${recipient.id}`)
+                          }
+                        >
+                          <IconEdit className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => handleDelete(recipient.id)}
+                        >
+                          <IconTrash className="h-4 w-4" />
+                          Delete
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -369,7 +370,7 @@ export default function KareRecipientsPage() {
                 ? "Try adjusting your search query"
                 : "Get started by adding a new recipient"}
             </p>
-            {!searchQuery && (
+            {!searchQuery && canCreate && (
               <Button
                 onClick={() => router.push("/kare-recipients/add")}
                 className="mt-4 gap-2"

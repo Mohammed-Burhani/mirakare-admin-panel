@@ -7,8 +7,6 @@ import Container from "@/components/layout/container"
 import { Button } from "@/components/ui/button"
 import {
   IconPlus,
-  IconEdit,
-  IconTrash,
   IconMail,
   IconPhone,
   IconCalendar,
@@ -27,15 +25,26 @@ import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { useKareGivers } from "@/lib/hooks/useKareGivers"
+import { Module } from "@/lib/utils/permissions"
+import { usePermissions, PermissionGuard } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
 export default function KareGiversPage() {
+  return (
+    <PermissionGuard module={Module.KARE_GIVERS}>
+      <KareGiversPageContent />
+    </PermissionGuard>
+  )
+}
+
+function KareGiversPageContent() {
   const router = useRouter()
   const { data: givers = [], isLoading, error, deleteKareGiver } = useKareGivers()
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGiver, setSelectedGiver] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
+  const { canCreate } = usePermissions(Module.KARE_GIVERS)
 
   const filteredGivers = givers.filter((giver: any) => {
     const query = searchQuery.toLowerCase()
@@ -109,29 +118,12 @@ export default function KareGiversPage() {
     {
       header: "Actions",
       cell: (row) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/kare-givers/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id)
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
-        </div>
+        <ActionButtons
+          module={Module.KARE_GIVERS}
+          onEdit={() => router.push(`/kare-givers/edit/${row.id}`)}
+          onDelete={() => handleDelete(row.id)}
+          layout="horizontal"
+        />
       ),
     },
   ]
@@ -146,13 +138,15 @@ export default function KareGiversPage() {
             actions={
               <>
                 <ViewToggle view={view} onViewChange={setView} />
-                <Button
-                  onClick={() => router.push("/kare-givers/add")}
-                  className="gap-2"
-                >
-                  <IconPlus className="h-4 w-4" />
-                  Add New
-                </Button>
+                {canCreate && (
+                  <Button
+                    onClick={() => router.push("/kare-givers/add")}
+                    className="gap-2"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Add New
+                  </Button>
+                )}
               </>
             }
           />
@@ -218,6 +212,7 @@ export default function KareGiversPage() {
                     ]}
                     actions={
                       <ActionButtons
+                        module={Module.KARE_GIVERS}
                         onEdit={() => router.push(`/kare-givers/edit/${giver.id}`)}
                         onDelete={() => handleDelete(giver.id)}
                       />
@@ -240,7 +235,7 @@ export default function KareGiversPage() {
                 : "Get started by adding a new caregiver"
             }
             action={
-              !searchQuery
+              !searchQuery && canCreate
                 ? {
                     label: "Add New Giver",
                     onClick: () => router.push("/kare-givers/add"),
