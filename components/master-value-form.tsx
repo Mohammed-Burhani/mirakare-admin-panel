@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation"
 import { Formik, Form } from "formik"
 import * as Yup from "yup"
 import { IconDatabase } from "@tabler/icons-react"
-import { useMasterValues, MASTER_VALUE_TYPES } from "@/lib/hooks/useMasterValues"
+import { useMasterValues, useMasterValue, MASTER_VALUE_TYPES } from "@/lib/hooks/useMasterValues"
+import { CreateMasterValueRequest, UpdateMasterValueRequest } from "@/lib/api/types"
 import { toast } from "sonner"
 import { FormHeader } from "@/components/form/form-header"
 import { FormSection } from "@/components/form/form-section"
@@ -25,13 +26,7 @@ const validationSchema = Yup.object({
 
 interface MasterValueFormProps {
   mode: "add" | "edit"
-  initialValues?: {
-    id?: number
-    text: string
-    description: string
-    type: number
-    isPublished: boolean
-  }
+  id?: number
 }
 
 const defaultValues = {
@@ -41,34 +36,52 @@ const defaultValues = {
   isPublished: true,
 }
 
-export function MasterValueForm({ mode, initialValues }: MasterValueFormProps) {
+export function MasterValueForm({ mode, id }: MasterValueFormProps) {
   const router = useRouter()
   const { createMasterValue, updateMasterValue } = useMasterValues()
+  const { data: masterValue, isLoading } = useMasterValue(id || 0)
+
+  const initialValues = mode === "edit" && masterValue ? {
+    text: masterValue.text,
+    description: masterValue.description || "",
+    type: masterValue.type,
+    isPublished: masterValue.isPublished,
+  } : defaultValues
 
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
-      const masterValueData = {
-        text: values.text,
-        description: values.description || null,
-        type: values.type,
-        isPublished: values.isPublished,
-      }
-
       if (mode === "add") {
-        await createMasterValue.mutateAsync(masterValueData)
-        toast.success("Master Value created successfully")
-      } else {
-        const id = (initialValues as any)?.id
-        if (id) {
-          await updateMasterValue.mutateAsync({ id: parseInt(id), ...masterValueData })
-          toast.success("Master Value updated successfully")
+        const payload: CreateMasterValueRequest = {
+          id: 0, // API will assign ID
+          text: values.text,
+          description: values.description || "",
+          type: values.type,
+          isPublished: values.isPublished,
+          createdDate: new Date().toISOString(),
         }
+        await createMasterValue.mutateAsync(payload)
+        toast.success("Master Value created successfully")
+      } else if (mode === "edit" && id) {
+        const payload: UpdateMasterValueRequest = {
+          id: id,
+          text: values.text,
+          description: values.description || "",
+          type: values.type,
+          isPublished: values.isPublished,
+          createdDate: masterValue?.createdDate || new Date().toISOString(),
+        }
+        await updateMasterValue.mutateAsync(payload)
+        toast.success("Master Value updated successfully")
       }
       router.push("/masters/master-values")
     } catch (error) {
       toast.error(`Failed to ${mode === "add" ? "create" : "update"} Master Value`)
       console.error("Form submission error:", error)
     }
+  }
+
+  if (mode === "edit" && isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -80,7 +93,7 @@ export function MasterValueForm({ mode, initialValues }: MasterValueFormProps) {
       />
 
       <Formik
-        initialValues={initialValues || defaultValues}
+        initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
         enableReinitialize
@@ -96,6 +109,7 @@ export function MasterValueForm({ mode, initialValues }: MasterValueFormProps) {
               <FormSwitch
                 name="isPublished"
                 label="Is Active"
+                description="Enable or disable this master value"
               />
 
               <FormSelect

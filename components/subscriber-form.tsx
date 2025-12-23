@@ -1,138 +1,140 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Formik, Form, Field, ErrorMessage } from "formik"
+import { Formik, Form } from "formik"
 import * as Yup from "yup"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import {
-  IconArrowLeft,
-  IconDeviceFloppy,
-  IconX,
   IconBuilding,
   IconUser,
-  IconMail,
-  IconPhone,
   IconMapPin,
   IconWorld,
-  IconCreditCard,
   IconNotes,
   IconUserPlus,
 } from "@tabler/icons-react"
-import { useSubscribers, SUBSCRIBER_TYPES, PRICE_PLANS } from "@/lib/hooks/useSubscribers"
+import { useSubscribers, useSubscriber, SUBSCRIBER_TYPES } from "@/lib/hooks/useSubscribers"
+import { useActivePackages } from "@/lib/hooks/usePackages"
+import { CreateSubscriberRequest, UpdateSubscriberRequest } from "@/lib/api/types"
 import { toast } from "sonner"
+import { FormHeader } from "@/components/form/form-header"
+import { FormSection } from "@/components/form/form-section"
+import { FormField, FormSelect, FormSwitch, FormTextarea } from "@/components/form/form-field"
+import { FormActions } from "@/components/form/form-actions"
 
 // Validation Schema
 const validationSchema = Yup.object({
-  subscriberType: Yup.string().required("Subscriber type is required"),
-  organizationName: Yup.string()
-    .required("Organization name is required")
-    .min(2, "Organization name must be at least 2 characters"),
-  organizationNumber: Yup.string(),
-  primaryContactFirstName: Yup.string()
+  fname: Yup.string()
     .required("First name is required")
     .min(2, "First name must be at least 2 characters"),
-  primaryContactMiddleName: Yup.string(),
-  primaryContactLastName: Yup.string()
+  lname: Yup.string()
     .required("Last name is required")
     .min(2, "Last name must be at least 2 characters"),
-  primaryContactMobile: Yup.string()
+  type: Yup.string().required("Subscriber type is required"),
+  contactPersonFName: Yup.string()
+    .required("Contact person first name is required"),
+  contactPersonLName: Yup.string()
+    .required("Contact person last name is required"),
+  mobile: Yup.string()
     .required("Mobile number is required")
     .matches(/^[0-9-+\s()]+$/, "Invalid mobile number format"),
-  primaryEmail: Yup.string()
+  email: Yup.string()
     .required("Email is required")
     .email("Invalid email address"),
-  addressLine1: Yup.string().required("Address line 1 is required"),
-  addressLine2: Yup.string(),
+  address1: Yup.string().required("Address line 1 is required"),
   city: Yup.string().required("City is required"),
   state: Yup.string().required("State is required"),
   zipcode: Yup.string()
     .required("Zipcode is required")
     .matches(/^[0-9]{5}(-[0-9]{4})?$/, "Invalid zipcode format"),
   country: Yup.string().required("Country is required"),
+  pricePlanType: Yup.number().required("Price plan is required"),
   websiteUrl: Yup.string().url("Invalid URL format"),
-  pricePlan: Yup.string().required("Price plan is required"),
-  createOrgAdmin: Yup.boolean(),
-  notes: Yup.string(),
 })
 
 interface SubscriberFormProps {
   mode: "add" | "edit"
-  initialValues?: {
-    id?: number
-    subscriberType: string
-    organizationName: string
-    organizationNumber: string
-    primaryContactFirstName: string
-    primaryContactMiddleName: string
-    primaryContactLastName: string
-    primaryContactMobile: string
-    primaryEmail: string
-    addressLine1: string
-    addressLine2: string
-    city: string
-    state: string
-    zipcode: string
-    country: string
-    websiteUrl: string
-    pricePlan: string
-    createOrgAdmin: boolean
-    notes: string
-  }
+  id?: number
 }
 
 const defaultValues = {
-  subscriberType: "organization",
-  organizationName: "",
-  organizationNumber: "",
-  primaryContactFirstName: "",
-  primaryContactMiddleName: "",
-  primaryContactLastName: "",
-  primaryContactMobile: "",
-  primaryEmail: "",
-  addressLine1: "",
-  addressLine2: "",
+  fname: "",
+  mname: "",
+  lname: "",
+  type: "organization",
+  contactPersonFName: "",
+  contactPersonMName: "",
+  contactPersonLName: "",
+  mobile: "",
+  orgPhone: "",
+  email: "",
+  address1: "",
+  address2: "",
   city: "",
   state: "",
   zipcode: "",
   country: "United States",
   websiteUrl: "",
-  pricePlan: "",
-  createOrgAdmin: false,
+  pricePlanType: 1,
+  sameAsSub: true,
+  userfname: "",
+  usermname: "",
+  userlname: "",
+  usermobile: "",
+  useremail: "",
+  useraddress1: "",
+  useraddress2: "",
+  usercity: "",
+  userstate: "",
+  userzipcode: "",
+  usercountry: "",
+  usernotes: "",
   notes: "",
 }
 
-export function SubscriberForm({ mode, initialValues }: SubscriberFormProps) {
+export function SubscriberForm({ mode, id }: SubscriberFormProps) {
   const router = useRouter()
   const { createSubscriber, updateSubscriber } = useSubscribers()
+  const { data: subscriber, isLoading } = useSubscriber(id || 0)
+  const { data: packages = [], isLoading: packagesLoading } = useActivePackages()
+
+  // Convert packages to dropdown format
+  const packageOptions = packages.map(pkg => ({
+    id: pkg.id,
+    name: `${pkg.name} (${pkg.durationInMonths} months) - ${pkg.type}`
+  }))
+
+  // For edit mode, we need to handle the simplified subscriber data
+  // Since the API returns simplified data but expects complex data for updates,
+  // we'll use default values for edit mode and let user fill in the details
+  const initialValues = mode === "edit" && subscriber ? {
+    ...defaultValues,
+    // Map the available fields from the simplified subscriber response
+    type: subscriber.type.toLowerCase(),
+    mobile: subscriber.mobile,
+    orgPhone: subscriber.orgPhone || "",
+    email: subscriber.email,
+    // Parse name if it's in "FirstName LastName" format
+    fname: subscriber.name.split(' ')[0] || "",
+    lname: subscriber.name.split(' ').slice(1).join(' ') || "",
+    // Parse address if available
+    address1: subscriber.address || "",
+  } : defaultValues
 
   const handleSubmit = async (values: typeof defaultValues) => {
     try {
       if (mode === "add") {
-        await createSubscriber.mutateAsync(values)
-        toast.success("Subscriber registered successfully")
-      } else {
-        const id = (initialValues as any)?.id
-        if (id) {
-          await updateSubscriber.mutateAsync({ id: parseInt(id), ...values })
-          toast.success("Subscriber updated successfully")
+        const payload: CreateSubscriberRequest = {
+          id: 0, // API will assign ID
+          ...values,
         }
+        await createSubscriber.mutateAsync(payload)
+        toast.success("Subscriber registered successfully")
+      } else if (mode === "edit" && id) {
+        const payload: UpdateSubscriberRequest = {
+          id: id,
+          ...values,
+        }
+        await updateSubscriber.mutateAsync(payload)
+        toast.success("Subscriber updated successfully")
       }
       router.push("/subscribers")
     } catch (error) {
@@ -141,446 +143,290 @@ export function SubscriberForm({ mode, initialValues }: SubscriberFormProps) {
     }
   }
 
+  if (mode === "edit" && isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (packagesLoading) {
+    return <div>Loading packages...</div>
+  }
+
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => router.back()}
-          className="h-9 w-9"
-        >
-          <IconArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {mode === "add" ? "Register New Subscriber Account" : "Edit Subscriber Account"}
-          </h1>
-          <p className="text-muted-foreground">
-            {mode === "add"
-              ? "Create a new subscriber organization or family account"
-              : "Update subscriber information and settings"}
-          </p>
-        </div>
-      </div>
+      <FormHeader
+        title={mode === "add" ? "Register New Subscriber Account" : "Edit Subscriber Account"}
+        description={mode === "add" ? "Create a new subscriber organization or family account" : "Update subscriber information and settings"}
+        onBack={() => router.back()}
+      />
 
       <Formik
-        initialValues={initialValues || defaultValues}
+        initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ isSubmitting, dirty, resetForm, values, setFieldValue }) => (
+        {({ isSubmitting, values }) => (
           <Form className="flex flex-col gap-6">
-            {/* Subscriber Type & Organization Info */}
-            <Card className="border-2 border-primary/20">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2">
-                  <IconBuilding className="h-5 w-5 text-primary" />
-                  <CardTitle>Organization Information</CardTitle>
-                </div>
-                <CardDescription>
-                  Basic organization details and subscriber type (* Required fields)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="subscriberType">
-                    Subscriber Type <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={values.subscriberType}
-                    onValueChange={(value) => setFieldValue("subscriberType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subscriber type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SUBSCRIBER_TYPES.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage
-                    name="subscriberType"
-                    component="p"
-                    className="text-destructive text-sm"
-                  />
-                </div>
+            {/* Organization Information */}
+            <FormSection
+              title="Organization Information"
+              description="Basic organization details and subscriber type (* Required fields)"
+              icon={<IconBuilding className="h-5 w-5 text-primary" />}
+              highlight
+            >
+              <FormSelect
+                name="type"
+                label="Subscriber Type"
+                placeholder="Select subscriber type"
+                options={SUBSCRIBER_TYPES}
+                required
+              />
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="organizationName">
-                      Organization Name <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="organizationName"
-                      type="text"
-                      placeholder="Enter organization name"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="organizationName"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  name="fname"
+                  label="Organization First Name"
+                  placeholder="Enter first name"
+                  required
+                />
+                <FormField
+                  name="mname"
+                  label="Middle Name"
+                  placeholder="Enter middle name"
+                />
+                <FormField
+                  name="lname"
+                  label="Organization Last Name"
+                  placeholder="Enter last name"
+                  required
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="organizationNumber">Organization Number</Label>
-                    <Field
-                      name="organizationNumber"
-                      type="text"
-                      placeholder="Enter organization number"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  name="mobile"
+                  label="Mobile Number"
+                  placeholder="Enter mobile number"
+                  required
+                />
+                <FormField
+                  name="orgPhone"
+                  label="Organization Phone"
+                  placeholder="Enter organization phone"
+                />
+              </div>
 
-            {/* Primary Contact Person */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2">
-                  <IconUser className="h-5 w-5 text-primary" />
-                  <CardTitle>Primary Contact Person</CardTitle>
-                </div>
-                <CardDescription>
-                  Main contact person for this subscriber account
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryContactFirstName">
-                      First Name <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="primaryContactFirstName"
-                      type="text"
-                      placeholder="First Name"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="primaryContactFirstName"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
+              <FormField
+                name="email"
+                label="Email Address"
+                type="email"
+                placeholder="Enter email address"
+                required
+              />
+            </FormSection>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryContactMiddleName">Middle Name</Label>
-                    <Field
-                      name="primaryContactMiddleName"
-                      type="text"
-                      placeholder="Middle Name"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryContactLastName">
-                      Last Name <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="primaryContactLastName"
-                      type="text"
-                      placeholder="Last Name"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="primaryContactLastName"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryContactMobile" className="flex items-center gap-2">
-                      <IconPhone className="h-4 w-4" />
-                      Primary Contact Mobile No. <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="primaryContactMobile"
-                      type="text"
-                      placeholder="Mobile number"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="primaryContactMobile"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryEmail" className="flex items-center gap-2">
-                      <IconMail className="h-4 w-4" />
-                      Primary Email <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="primaryEmail"
-                      type="email"
-                      placeholder="Email address"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="primaryEmail"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Contact Person Information */}
+            <FormSection
+              title="Primary Contact Person"
+              description="Main contact person for this subscriber account"
+              icon={<IconUser className="h-5 w-5 text-primary" />}
+            >
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  name="contactPersonFName"
+                  label="First Name"
+                  placeholder="Contact first name"
+                  required
+                />
+                <FormField
+                  name="contactPersonMName"
+                  label="Middle Name"
+                  placeholder="Contact middle name"
+                />
+                <FormField
+                  name="contactPersonLName"
+                  label="Last Name"
+                  placeholder="Contact last name"
+                  required
+                />
+              </div>
+            </FormSection>
 
             {/* Address Information */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2">
-                  <IconMapPin className="h-5 w-5 text-primary" />
-                  <CardTitle>Address</CardTitle>
-                </div>
-                <CardDescription>
-                  Physical location and contact details
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="addressLine1">
-                    Address Line 1 <span className="text-destructive">*</span>
-                  </Label>
-                  <Field
-                    name="addressLine1"
-                    type="text"
-                    placeholder="Address Line 1"
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <ErrorMessage
-                    name="addressLine1"
-                    component="p"
-                    className="text-destructive text-sm"
-                  />
-                </div>
+            <FormSection
+              title="Address Information"
+              description="Physical location and contact details"
+              icon={<IconMapPin className="h-5 w-5 text-primary" />}
+            >
+              <FormField
+                name="address1"
+                label="Address Line 1"
+                placeholder="Enter address line 1"
+                required
+              />
+              <FormField
+                name="address2"
+                label="Address Line 2"
+                placeholder="Enter address line 2"
+              />
 
-                <div className="space-y-2">
-                  <Label htmlFor="addressLine2">Address Line 2</Label>
-                  <Field
-                    name="addressLine2"
-                    type="text"
-                    placeholder="Address Line 2"
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">
-                      City <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="city"
-                      type="text"
-                      placeholder="City"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="city"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">
-                      State <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="state"
-                      type="text"
-                      placeholder="State"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="state"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="zipcode">
-                      Zipcode <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="zipcode"
-                      type="text"
-                      placeholder="Zipcode"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="zipcode"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="country">
-                      Country <span className="text-destructive">*</span>
-                    </Label>
-                    <Field
-                      name="country"
-                      type="text"
-                      placeholder="Country"
-                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <ErrorMessage
-                      name="country"
-                      component="p"
-                      className="text-destructive text-sm"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="grid gap-4 md:grid-cols-4">
+                <FormField
+                  name="city"
+                  label="City"
+                  placeholder="Enter city"
+                  required
+                />
+                <FormField
+                  name="state"
+                  label="State"
+                  placeholder="Enter state"
+                  required
+                />
+                <FormField
+                  name="zipcode"
+                  label="Zipcode"
+                  placeholder="Enter zipcode"
+                  required
+                />
+                <FormField
+                  name="country"
+                  label="Country"
+                  placeholder="Enter country"
+                  required
+                />
+              </div>
+            </FormSection>
 
             {/* Additional Information */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2">
-                  <IconWorld className="h-5 w-5 text-primary" />
-                  <CardTitle>Additional Information</CardTitle>
-                </div>
-                <CardDescription>
-                  Website, pricing, and other details
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="websiteUrl" className="flex items-center gap-2">
-                    <IconWorld className="h-4 w-4" />
-                    Website URL
-                  </Label>
-                  <Field
-                    name="websiteUrl"
-                    type="url"
-                    placeholder="https://example.com"
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            <FormSection
+              title="Additional Information"
+              description="Website, pricing, and other details"
+              icon={<IconWorld className="h-5 w-5 text-primary" />}
+            >
+              <FormField
+                name="websiteUrl"
+                label="Website URL"
+                type="url"
+                placeholder="https://example.com"
+              />
+
+              <FormSelect
+                name="pricePlanType"
+                label="Price Plan"
+                placeholder="Select price plan"
+                options={packageOptions}
+                required
+              />
+
+              <FormSwitch
+                name="sameAsSub"
+                label="Same as Subscriber"
+                description="Use the same details for organization admin"
+              />
+            </FormSection>
+
+            {/* User Admin Information */}
+            {!values.sameAsSub && (
+              <FormSection
+                title="Organization Admin Information"
+                description="Details for the organization admin user"
+                icon={<IconUserPlus className="h-5 w-5 text-primary" />}
+              >
+                <div className="grid gap-4 md:grid-cols-3">
+                  <FormField
+                    name="userfname"
+                    label="Admin First Name"
+                    placeholder="Enter admin first name"
                   />
-                  <ErrorMessage
-                    name="websiteUrl"
-                    component="p"
-                    className="text-destructive text-sm"
+                  <FormField
+                    name="usermname"
+                    label="Admin Middle Name"
+                    placeholder="Enter admin middle name"
+                  />
+                  <FormField
+                    name="userlname"
+                    label="Admin Last Name"
+                    placeholder="Enter admin last name"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="pricePlan" className="flex items-center gap-2">
-                    <IconCreditCard className="h-4 w-4" />
-                    Price Plan <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={values.pricePlan}
-                    onValueChange={(value) => setFieldValue("pricePlan", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select price plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRICE_PLANS.map((plan) => (
-                        <SelectItem key={plan.id} value={plan.id}>
-                          {plan.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage
-                    name="pricePlan"
-                    component="p"
-                    className="text-destructive text-sm"
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    name="usermobile"
+                    label="Admin Mobile"
+                    placeholder="Enter admin mobile"
+                  />
+                  <FormField
+                    name="useremail"
+                    label="Admin Email"
+                    type="email"
+                    placeholder="Enter admin email"
                   />
                 </div>
 
-                <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
-                  <Checkbox
-                    id="createOrgAdmin"
-                    checked={values.createOrgAdmin}
-                    onCheckedChange={(checked) => setFieldValue("createOrgAdmin", checked)}
+                <FormField
+                  name="useraddress1"
+                  label="Admin Address Line 1"
+                  placeholder="Enter admin address line 1"
+                />
+                <FormField
+                  name="useraddress2"
+                  label="Admin Address Line 2"
+                  placeholder="Enter admin address line 2"
+                />
+
+                <div className="grid gap-4 md:grid-cols-4">
+                  <FormField
+                    name="usercity"
+                    label="Admin City"
+                    placeholder="Enter admin city"
                   />
-                  <Label htmlFor="createOrgAdmin" className="flex items-center gap-2 cursor-pointer">
-                    <IconUserPlus className="h-4 w-4" />
-                    Create Organization Admin with the same details as Primary contact person
-                  </Label>
+                  <FormField
+                    name="userstate"
+                    label="Admin State"
+                    placeholder="Enter admin state"
+                  />
+                  <FormField
+                    name="userzipcode"
+                    label="Admin Zipcode"
+                    placeholder="Enter admin zipcode"
+                  />
+                  <FormField
+                    name="usercountry"
+                    label="Admin Country"
+                    placeholder="Enter admin country"
+                  />
                 </div>
-              </CardContent>
-            </Card>
+
+                <FormField
+                  name="usernotes"
+                  label="Admin Notes"
+                  placeholder="Enter admin notes"
+                />
+              </FormSection>
+            )}
 
             {/* Notes */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2">
-                  <IconNotes className="h-5 w-5 text-primary" />
-                  <CardTitle>Notes</CardTitle>
-                </div>
-                <CardDescription>
-                  Additional information and comments
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Additional Information</Label>
-                  <Field
-                    as="textarea"
-                    name="notes"
-                    placeholder="Add any additional notes or information..."
-                    rows={4}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <FormSection
+              title="Notes"
+              description="Additional information and comments"
+              icon={<IconNotes className="h-5 w-5 text-primary" />}
+            >
+              <FormTextarea
+                name="notes"
+                label="Additional Information"
+                placeholder="Add any additional notes or information..."
+                rows={4}
+              />
+            </FormSection>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  resetForm()
-                  router.back()
-                }}
-                className="gap-2"
-              >
-                <IconX className="h-4 w-4" />
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => resetForm()}
-                disabled={!dirty}
-                className="gap-2"
-              >
-                Clear
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting || createSubscriber.isPending || updateSubscriber.isPending} 
-                className="gap-2"
-              >
-                <IconDeviceFloppy className="h-4 w-4" />
-                {mode === "add" ? "Register" : "Save Changes"}
-              </Button>
-            </div>
+            <FormActions
+              mode={mode}
+              onCancel={() => router.back()}
+              isSubmitting={isSubmitting || createSubscriber.isPending || updateSubscriber.isPending}
+              submitLabel={mode === "add" ? "Register" : "Save Changes"}
+            />
           </Form>
         )}
       </Formik>

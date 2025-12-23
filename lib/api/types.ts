@@ -863,6 +863,197 @@ export interface MasterValue {
 }
 
 /**
+ * Create Master Value request payload
+ */
+export interface CreateMasterValueRequest {
+  id: number
+  text: string
+  description: string
+  type: number
+  isPublished: boolean
+  createdDate: string
+}
+
+/**
+ * Update Master Value request payload
+ */
+export interface UpdateMasterValueRequest {
+  id: number
+  text: string
+  description: string
+  type: number
+  isPublished: boolean
+  createdDate: string
+}
+
+/**
+ * Master Value list filter parameters
+ */
+export interface MasterValueListParams {
+  type: number | null
+}
+
+// =============================================================================
+// SUBSCRIBERS MANAGEMENT
+// =============================================================================
+
+/**
+ * Subscriber interface - based on actual API response structure
+ */
+export interface Subscriber {
+  id: number
+  name: string
+  type: string
+  orgPhone: string | null
+  mobile: string
+  email: string
+  address: string
+  createdDate: string
+  isActive: boolean
+}
+
+/**
+ * Create Subscriber request payload (register)
+ */
+export interface CreateSubscriberRequest {
+  id: number
+  fname: string
+  mname: string
+  lname: string
+  type: string
+  contactPersonFName: string
+  contactPersonMName: string
+  contactPersonLName: string
+  mobile: string
+  orgPhone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  websiteUrl: string
+  pricePlanType: number
+  sameAsSub: boolean
+  userfname: string
+  usermname: string
+  userlname: string
+  usermobile: string
+  useremail: string
+  useraddress1: string
+  useraddress2: string
+  usercity: string
+  userstate: string
+  userzipcode: string
+  usercountry: string
+  usernotes: string
+  notes: string
+}
+
+/**
+ * Update Subscriber request payload (edit)
+ */
+export interface UpdateSubscriberRequest {
+  id: number
+  fname: string
+  mname: string
+  lname: string
+  type: string
+  contactPersonFName: string
+  contactPersonMName: string
+  contactPersonLName: string
+  mobile: string
+  orgPhone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  websiteUrl: string
+  pricePlanType: number
+  sameAsSub: boolean
+  userfname: string
+  usermname: string
+  userlname: string
+  usermobile: string
+  useremail: string
+  useraddress1: string
+  useraddress2: string
+  usercity: string
+  userstate: string
+  userzipcode: string
+  usercountry: string
+  usernotes: string
+  notes: string
+}
+
+/**
+ * Subscriber list filter parameters
+ */
+export interface SubscriberListParams {
+  type?: string | null
+}
+
+// =============================================================================
+// PACKAGES MANAGEMENT
+// =============================================================================
+
+/**
+ * Package interface - based on API response structure
+ */
+export interface Package {
+  id: number
+  name: string
+  type: string
+  durationInMonths: number
+  noOfFamilies: number
+  noOfKareReceivers: number
+  noOfKareGivers: number
+  noOfKareViewers: number
+  isActive: boolean
+}
+
+/**
+ * Create Package request payload
+ */
+export interface CreatePackageRequest {
+  id: number
+  name: string
+  type: string
+  durationInMonths: number
+  noOfFamilies: number
+  noOfKareReceivers: number
+  noOfKareGivers: number
+  noOfKareViewers: number
+  isActive: boolean
+}
+
+/**
+ * Update Package request payload
+ */
+export interface UpdatePackageRequest {
+  id: number
+  name: string
+  type: string
+  durationInMonths: number
+  noOfFamilies: number
+  noOfKareReceivers: number
+  noOfKareGivers: number
+  noOfKareViewers: number
+  isActive: boolean
+}
+
+/**
+ * Package list filter parameters
+ */
+export interface PackageListParams {
+  type?: string | null
+}
+
+/**
  * Family Profile interface - for subscriber profile management
  */
 export interface FamilyProfile {
@@ -897,4 +1088,41 @@ export interface UpdateFamilyProfileRequest {
   zipcode?: string
   country?: string
   notes?: string
+}
+
+// =============================================================================
+// VITAL TYPES MANAGEMENT
+// =============================================================================
+
+/**
+ * Vital Type Entity interface - based on API payload structure
+ */
+export interface VitalTypeEntity {
+  id: number
+  name: string
+  providerName: string
+  isManual: boolean
+  createdDate: string
+}
+
+/**
+ * Create Vital Type request payload
+ */
+export interface CreateVitalTypeRequest {
+  id: number
+  name: string
+  providerName: string
+  isManual: boolean
+  createdDate: string
+}
+
+/**
+ * Update Vital Type request payload
+ */
+export interface UpdateVitalTypeRequest {
+  id: number
+  name: string
+  providerName: string
+  isManual: boolean
+  createdDate: string
 }

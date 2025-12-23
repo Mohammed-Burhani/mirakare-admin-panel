@@ -24,15 +24,8 @@ import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { useVitalTypes } from "@/lib/hooks/useVitalTypes"
+import { VitalTypeEntity } from "@/lib/api/types"
 import { toast } from "sonner"
-
-interface VitalType {
-  id: number
-  name: string
-  providerName: string
-  createdDate: string
-  isActive: boolean
-}
 
 export default function VitalTypesPage() {
   const router = useRouter()
@@ -42,7 +35,7 @@ export default function VitalTypesPage() {
   const [selectedVitalType, setSelectedVitalType] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
 
-  const filteredVitalTypes = (vitalTypes as VitalType[]).filter((vitalType) => {
+  const filteredVitalTypes = (vitalTypes as VitalTypeEntity[]).filter((vitalType) => {
     const query = searchQuery.toLowerCase()
     return (
       (vitalType.name && vitalType.name.toLowerCase().includes(query)) ||
@@ -69,7 +62,7 @@ export default function VitalTypesPage() {
     }
   }
 
-  const columns: ColumnDef<VitalType>[] = [
+  const columns: ColumnDef<VitalTypeEntity>[] = [
     {
       accessorKey: "name",
       header: "Name",
@@ -84,11 +77,11 @@ export default function VitalTypesPage() {
       header: "Provider Name",
     },
     {
-      accessorKey: "isActive",
-      header: "Status",
+      accessorKey: "isManual",
+      header: "Entry Type",
       cell: (row) => (
-        <Badge variant={row.isActive ? "default" : "secondary"}>
-          {row.isActive ? 'Active' : 'Inactive'}
+        <Badge variant={row.isManual ? "default" : "secondary"}>
+          {row.isManual ? 'Manual' : 'Automatic'}
         </Badge>
       ),
     },
@@ -180,8 +173,8 @@ export default function VitalTypesPage() {
                   </div>
                 }
                 badge={{
-                  label: vitalType.isActive ? 'Active' : 'Inactive',
-                  variant: vitalType.isActive ? "default" : "secondary",
+                  label: vitalType.isManual ? 'Manual Entry' : 'Automatic',
+                  variant: vitalType.isManual ? "default" : "secondary",
                 }}
                 contactInfo={[
                   {

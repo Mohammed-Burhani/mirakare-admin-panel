@@ -17,13 +17,12 @@ import {
   IconEdit,
   IconTrash,
   IconUsers,
-  IconCalendar,
   IconBuilding,
   IconMail,
   IconPhone,
-  IconWorld,
   IconSearch,
   IconMapPin,
+  IconCreditCard,
 } from "@tabler/icons-react"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
@@ -35,32 +34,9 @@ import { DeleteDialog } from "@/components/delete-dialog"
 import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
-import { useSubscribers, SUBSCRIBER_TYPES, PRICE_PLANS } from "@/lib/hooks/useSubscribers"
+import { useSubscribers, SUBSCRIBER_TYPES } from "@/lib/hooks/useSubscribers"
+import { Subscriber } from "@/lib/api/types"
 import { toast } from "sonner"
-
-interface Subscriber {
-  id: number
-  subscriberType: string
-  organizationName: string
-  organizationNumber: string
-  primaryContactFirstName: string
-  primaryContactMiddleName: string
-  primaryContactLastName: string
-  primaryContactMobile: string
-  primaryEmail: string
-  addressLine1: string
-  addressLine2: string
-  city: string
-  state: string
-  zipcode: string
-  country: string
-  websiteUrl: string
-  pricePlan: string
-  createOrgAdmin: boolean
-  notes: string
-  createdDate: string
-  isActive: boolean
-}
 
 export default function SubscribersPage() {
   const router = useRouter()
@@ -74,11 +50,10 @@ export default function SubscribersPage() {
   const filteredSubscribers = (subscribers as Subscriber[]).filter((subscriber) => {
     const query = searchQuery.toLowerCase()
     return (
-      (subscriber.organizationName && subscriber.organizationName.toLowerCase().includes(query)) ||
-      (subscriber.primaryEmail && subscriber.primaryEmail.toLowerCase().includes(query)) ||
-      (subscriber.primaryContactFirstName && subscriber.primaryContactFirstName.toLowerCase().includes(query)) ||
-      (subscriber.primaryContactLastName && subscriber.primaryContactLastName.toLowerCase().includes(query)) ||
-      (subscriber.organizationNumber && subscriber.organizationNumber.toLowerCase().includes(query))
+      (subscriber.name && subscriber.name.toLowerCase().includes(query)) ||
+      (subscriber.email && subscriber.email.toLowerCase().includes(query)) ||
+      (subscriber.mobile && subscriber.mobile.toLowerCase().includes(query)) ||
+      (subscriber.address && subscriber.address.toLowerCase().includes(query))
     )
   })
 
@@ -107,51 +82,38 @@ export default function SubscribersPage() {
   }
 
   const getTypeName = (type: string) => {
-    return SUBSCRIBER_TYPES.find(t => t.id === type)?.name || "Unknown"
-  }
-
-  const getPricePlanName = (planId: string) => {
-    return PRICE_PLANS.find(p => p.id === planId)?.name || planId
-  }
-
-  const getFullName = (subscriber: Subscriber) => {
-    const parts = [
-      subscriber.primaryContactFirstName,
-      subscriber.primaryContactMiddleName,
-      subscriber.primaryContactLastName
-    ].filter(Boolean)
-    return parts.join(" ")
+    return SUBSCRIBER_TYPES.find(t => t.id === type.toLowerCase())?.name || type
   }
 
   const columns: ColumnDef<Subscriber>[] = [
     {
-      accessorKey: "organizationName",
+      accessorKey: "name",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {row.organizationName}
+          {row.name}
         </div>
       ),
     },
     {
-      accessorKey: "organizationNumber",
+      accessorKey: "orgPhone",
       header: "Org Phone",
-      cell: (row) => row.organizationNumber || 'N/A',
+      cell: (row) => row.orgPhone || 'N/A',
     },
     {
-      accessorKey: "primaryContactMobile",
+      accessorKey: "mobile",
       header: "Mobile",
     },
     {
-      accessorKey: "primaryEmail",
+      accessorKey: "email",
       header: "Email",
     },
     {
-      accessorKey: "subscriberType",
+      accessorKey: "type",
       header: "Type",
       cell: (row) => (
         <Badge variant="outline">
-          {getTypeName(row.subscriberType)}
+          {getTypeName(row.type)}
         </Badge>
       ),
     },
@@ -268,7 +230,7 @@ export default function SubscribersPage() {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search by organization name, email, contact name, or org number..."
+            placeholder="Search by name, email, mobile, or address..."
           />
         </FilterSection>
 
@@ -290,40 +252,40 @@ export default function SubscribersPage() {
               <ProfileCard
                 key={subscriber.id}
                 icon={
-                  subscriber.subscriberType === 'organization' ? 
+                  subscriber.type.toLowerCase() === 'organization' ? 
                     <IconBuilding className="text-primary h-8 w-8" /> :
                     <IconUsers className="text-primary h-8 w-8" />
                 }
-                title={subscriber.organizationName}
+                title={subscriber.name}
                 subtitle={
                   <div className="flex items-center gap-1">
-                    <IconUsers className="h-4 w-4" />
-                    <span>{getFullName(subscriber)}</span>
+                    <IconBuilding className="h-4 w-4" />
+                    <span>{getTypeName(subscriber.type)}</span>
                   </div>
                 }
                 badge={{
-                  label: getTypeName(subscriber.subscriberType),
-                  variant: subscriber.subscriberType === 'organization' ? "default" : "secondary",
+                  label: subscriber.isActive ? 'Active' : 'Inactive',
+                  variant: subscriber.isActive ? "default" : "secondary",
                 }}
                 contactInfo={[
                   {
                     icon: <IconMail className="h-4 w-4" />,
-                    label: subscriber.primaryEmail,
+                    label: subscriber.email,
                   },
                   {
                     icon: <IconPhone className="h-4 w-4" />,
-                    label: subscriber.primaryContactMobile,
+                    label: subscriber.mobile,
                   },
-                  {
-                    icon: <IconMapPin className="h-4 w-4" />,
-                    label: `${subscriber.city}, ${subscriber.state}`,
-                  },
-                  ...(subscriber.websiteUrl ? [{
-                    icon: <IconWorld className="h-4 w-4" />,
-                    label: subscriber.websiteUrl,
+                  ...(subscriber.orgPhone ? [{
+                    icon: <IconPhone className="h-4 w-4" />,
+                    label: `Org: ${subscriber.orgPhone}`,
                   }] : []),
                   {
-                    icon: <IconCalendar className="h-4 w-4" />,
+                    icon: <IconMapPin className="h-4 w-4" />,
+                    label: subscriber.address,
+                  },
+                  {
+                    icon: <IconCreditCard className="h-4 w-4" />,
                     label: `Created: ${new Date(subscriber.createdDate).toLocaleDateString()}`,
                   },
                 ]}

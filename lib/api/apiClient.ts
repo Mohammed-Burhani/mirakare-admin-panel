@@ -14,7 +14,18 @@ import {
   CreateKareRecipientRequest,
   CreateContactRequest,
   UpdateContactRequest,
-  MasterValue
+  MasterValue,
+  CreateMasterValueRequest,
+  UpdateMasterValueRequest,
+  Subscriber,
+  CreateSubscriberRequest,
+  UpdateSubscriberRequest,
+  Package,
+  CreatePackageRequest,
+  UpdatePackageRequest,
+  VitalTypeEntity,
+  CreateVitalTypeRequest,
+  UpdateVitalTypeRequest
 } from './types'
 
 // Export httpClient methods directly
@@ -227,9 +238,28 @@ export const apiClient = Object.assign(httpClient, {
   },
 
   // Master Values
-  getMasterValues: async (type: number): Promise<MasterValue[]> => {
+  getMasterValues: async (type: number | null = null): Promise<MasterValue[]> => {
     const response = await httpClient.post<MasterValue[]>('/mastervalue/list', { type })
     return response.data || []
+  },
+
+  getMasterValue: async (id: number): Promise<MasterValue> => {
+    const response = await httpClient.post<MasterValue>('/mastervalue/get', { id })
+    return response.data
+  },
+
+  createMasterValue: async (masterValue: CreateMasterValueRequest): Promise<MasterValue> => {
+    const response = await httpClient.post<MasterValue>('/mastervalue/add', masterValue)
+    return response.data
+  },
+
+  updateMasterValue: async (masterValue: UpdateMasterValueRequest): Promise<MasterValue> => {
+    const response = await httpClient.post<MasterValue>('/mastervalue/edit', masterValue)
+    return response.data
+  },
+
+  deleteMasterValue: async (id: number): Promise<void> => {
+    await httpClient.post('/mastervalue/delete', { id })
   },
 
   // Family Profile
@@ -254,5 +284,85 @@ export const apiClient = Object.assign(httpClient, {
   }) => {
     const response = await httpClient.post('/subscriber/profile/update', data)
     return response.data
+  },
+
+  // Vital Types
+  getVitalTypes: async (): Promise<VitalTypeEntity[]> => {
+    const response = await httpClient.post<VitalTypeEntity[]>('/vital-type/list', {})
+    return response.data || []
+  },
+
+  getVitalType: async (id: number): Promise<VitalTypeEntity> => {
+    const response = await httpClient.get<VitalTypeEntity>(`/vital-type/get?id=${id}`)
+    return response.data
+  },
+
+  createVitalType: async (vitalType: CreateVitalTypeRequest): Promise<VitalTypeEntity> => {
+    const response = await httpClient.post<VitalTypeEntity>('/vital-type/add', vitalType)
+    return response.data
+  },
+
+  updateVitalType: async (vitalType: UpdateVitalTypeRequest): Promise<VitalTypeEntity> => {
+    const response = await httpClient.post<VitalTypeEntity>('/vital-type/edit', vitalType)
+    return response.data
+  },
+
+  deleteVitalType: async (id: number): Promise<void> => {
+    await httpClient.post('/vital-type/delete', id)
+  },
+
+  // Subscribers
+  getSubscribers: async (type?: string | null): Promise<Subscriber[]> => {
+    const response = await httpClient.post<Subscriber[]>('/subscriber/list', { type: type || null })
+    return response.data || []
+  },
+
+  getSubscriber: async (id: number): Promise<Subscriber> => {
+    const response = await httpClient.get<Subscriber>(`/subscriber/get?id=${id}`)
+    return response.data
+  },
+
+  createSubscriber: async (subscriber: CreateSubscriberRequest): Promise<Subscriber> => {
+    const response = await httpClient.post<Subscriber>('/subscriber/register', subscriber)
+    return response.data
+  },
+
+  updateSubscriber: async (subscriber: UpdateSubscriberRequest): Promise<Subscriber> => {
+    const response = await httpClient.post<Subscriber>('/subscriber/edit', subscriber)
+    return response.data
+  },
+
+  deleteSubscriber: async (id: number): Promise<void> => {
+    await httpClient.post('/subscriber/delete', { id })
+  },
+
+  // Packages
+  getPackages: async (type?: string | null): Promise<Package[]> => {
+    const response = await httpClient.post<Package[]>('/package/list', { type: type || null })
+    return response.data || []
+  },
+
+  getPackage: async (id: number): Promise<Package> => {
+    const response = await httpClient.get<Package>(`/package/get?id=${id}`)
+    return response.data
+  },
+
+  createPackage: async (packageData: CreatePackageRequest): Promise<Package> => {
+    const response = await httpClient.post<Package>('/package/create', packageData)
+    return response.data
+  },
+
+  updatePackage: async (packageData: UpdatePackageRequest): Promise<Package> => {
+    const response = await httpClient.post<Package>('/package/edit', packageData)
+    return response.data
+  },
+
+  deletePackage: async (id: number): Promise<void> => {
+    await httpClient.post('/package/delete', { id })
+  },
+
+  getActivePackages: async (): Promise<Package[]> => {
+    const response = await httpClient.post<Package[]>('/package/active/list', {})
+    return response.data || []
   },
 })

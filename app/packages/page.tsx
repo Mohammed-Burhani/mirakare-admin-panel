@@ -17,13 +17,12 @@ import {
   IconEdit,
   IconTrash,
   IconPackage,
-  IconCalendar,
   IconUsers,
   IconEye,
   IconUserHeart,
-  IconCurrency,
   IconSearch,
   IconClock,
+  IconBuilding,
 } from "@tabler/icons-react"
 import { DataTable, ColumnDef } from "@/components/data-table"
 import { ViewToggle } from "@/components/view-toggle"
@@ -36,22 +35,8 @@ import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { usePackages, PACKAGE_TYPES } from "@/lib/hooks/usePackages"
+import { Package } from "@/lib/api/types"
 import { toast } from "sonner"
-
-interface Package {
-  id: number
-  name: string
-  type: string
-  isActive: boolean
-  durationInMonths: number
-  noOfKareReceivers: number
-  noOfKareGivers: number
-  noOfKareViewers: number
-  price: number
-  description: string
-  features: string[]
-  createdDate: string
-}
 
 export default function PackagesPage() {
   const router = useRouter()
@@ -66,7 +51,6 @@ export default function PackagesPage() {
     const query = searchQuery.toLowerCase()
     return (
       (pkg.name && pkg.name.toLowerCase().includes(query)) ||
-      (pkg.description && pkg.description.toLowerCase().includes(query)) ||
       (pkg.type && pkg.type.toLowerCase().includes(query))
     )
   })
@@ -96,14 +80,8 @@ export default function PackagesPage() {
   }
 
   const getTypeName = (type: string) => {
-    return PACKAGE_TYPES.find(t => t.id === type)?.name || "Unknown"
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price)
+    // Case-insensitive matching for display
+    return PACKAGE_TYPES.find(t => t.id.toLowerCase() === type.toLowerCase())?.name || "Unknown"
   }
 
   const columns: ColumnDef<Package>[] = [
@@ -126,18 +104,14 @@ export default function PackagesPage() {
       ),
     },
     {
-      accessorKey: "price",
-      header: "Price",
-      cell: (row) => (
-        <span className="font-medium text-green-600">
-          {formatPrice(row.price)}
-        </span>
-      ),
-    },
-    {
       accessorKey: "durationInMonths",
       header: "Duration",
       cell: (row) => `${row.durationInMonths} months`,
+    },
+    {
+      accessorKey: "noOfFamilies",
+      header: "Families",
+      cell: (row) => row.noOfFamilies,
     },
     {
       accessorKey: "noOfKareReceivers",
@@ -162,11 +136,6 @@ export default function PackagesPage() {
           {row.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
-    },
-    {
-      accessorKey: "createdDate",
-      header: "Created Date",
-      cell: (row) => new Date(row.createdDate).toLocaleDateString(),
     },
     {
       header: "Actions",
@@ -266,7 +235,7 @@ export default function PackagesPage() {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search by package name, description, or type..."
+            placeholder="Search by package name or type..."
           />
         </FilterSection>
 
@@ -291,19 +260,22 @@ export default function PackagesPage() {
                 title={pkg.name}
                 subtitle={
                   <div className="flex items-center gap-1">
-                    <IconCurrency className="h-4 w-4" />
-                    <span className="font-semibold text-green-600">{formatPrice(pkg.price)}</span>
-                    <span className="text-muted-foreground">/ {pkg.durationInMonths} months</span>
+                    <IconPackage className="h-4 w-4" />
+                    <span>{getTypeName(pkg.type)}</span>
                   </div>
                 }
                 badge={{
-                  label: getTypeName(pkg.type),
-                  variant: pkg.type === 'enterprise' ? "default" : "secondary",
+                  label: pkg.isActive ? 'Active' : 'Inactive',
+                  variant: pkg.isActive ? "default" : "secondary",
                 }}
                 contactInfo={[
                   {
                     icon: <IconClock className="h-4 w-4" />,
                     label: `Duration: ${pkg.durationInMonths} months`,
+                  },
+                  {
+                    icon: <IconBuilding className="h-4 w-4" />,
+                    label: `Families: ${pkg.noOfFamilies}`,
                   },
                   {
                     icon: <IconUserHeart className="h-4 w-4" />,
@@ -316,10 +288,6 @@ export default function PackagesPage() {
                   {
                     icon: <IconEye className="h-4 w-4" />,
                     label: `Viewers: ${pkg.noOfKareViewers}`,
-                  },
-                  {
-                    icon: <IconCalendar className="h-4 w-4" />,
-                    label: `Created: ${new Date(pkg.createdDate).toLocaleDateString()}`,
                   },
                 ]}
                 actions={
