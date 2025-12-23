@@ -26,6 +26,8 @@ import { FilterSection } from "@/components/filter-section"
 import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
+import { Module } from "@/lib/utils/permissions"
+import { usePermissions } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
 interface Admin {
@@ -47,6 +49,7 @@ export default function KareAdminsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
+  const { canCreate, canUpdate, canDelete } = usePermissions(Module.KARE_ADMINS)
 
   const filteredAdmins = (admins as Admin[]).filter((admin) => {
     const query = searchQuery.toLowerCase()
@@ -122,27 +125,31 @@ export default function KareAdminsPage() {
       header: "Actions",
       cell: (row) => (
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/kare-admins/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id.toString())
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
+          {canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/kare-admins/edit/${row.id}`)
+              }}
+            >
+              <IconEdit className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDelete(row.id.toString())
+              }}
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <IconTrash className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -158,13 +165,15 @@ export default function KareAdminsPage() {
             actions={
               <>
                 <ViewToggle view={view} onViewChange={setView} />
-                <Button
-                  onClick={() => router.push("/kare-admins/add")}
-                  className="gap-2"
-                >
-                  <IconPlus className="h-4 w-4" />
-                  Add New
-                </Button>
+                {canCreate && (
+                  <Button
+                    onClick={() => router.push("/kare-admins/add")}
+                    className="gap-2"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Add New
+                  </Button>
+                )}
               </>
             }
           />
@@ -224,6 +233,7 @@ export default function KareAdminsPage() {
                 ]}
                 actions={
                   <ActionButtons
+                    module={Module.KARE_ADMINS}
                     onEdit={() => router.push(`/kare-admins/edit/${admin.id}`)}
                     onDelete={() => handleDelete(admin.id.toString())}
                   />
@@ -247,7 +257,7 @@ export default function KareAdminsPage() {
                 : "Get started by adding a new admin"
             }
             action={
-              !searchQuery
+              !searchQuery && canCreate
                 ? {
                     label: "Add New Admin",
                     onClick: () => router.push("/kare-admins/add"),

@@ -82,6 +82,7 @@ export const useGoogleLogin = () => {
       // Store user info
       localStorage.setItem('userName', data.Name)
       localStorage.setItem('userRole', data.Role)
+      localStorage.setItem('subscriptionType', data.SubscriptionType)
       
       // Invalidate all auth-related queries
       queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
@@ -113,6 +114,9 @@ export const useLogout = () => {
       // Clear authentication tokens from localStorage
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('subscriptionType')
       
       // Clear all cached data
       queryClient.clear()
@@ -126,6 +130,9 @@ export const useLogout = () => {
       // Even if logout fails on server, clear local data
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('subscriptionType')
       queryClient.clear()
       
       if (typeof window !== 'undefined') {
@@ -150,6 +157,9 @@ export const useRevokeToken = () => {
       // Clear authentication tokens and cache
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('subscriptionType')
       queryClient.clear()
     }
   })

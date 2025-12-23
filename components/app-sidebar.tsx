@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   IconActivity,
   IconAddressBook,
-  // IconChartLine,
   IconDashboard,
   IconHelp,
   IconId,
@@ -18,9 +17,7 @@ import {
   IconDatabase,
   IconUsers,
   IconPackage,
-  IconChevronRight,
 } from "@tabler/icons-react"
-// import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavReports } from "@/components/nav-reports"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -35,6 +32,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import { 
+  canAccessModule, 
+  Module, 
+  isSystemAdmin, 
+  isKareAdmin,
+  getUserRole 
+} from "@/lib/utils/permissions"
 
 const data = {
   user: {
@@ -42,50 +46,79 @@ const data = {
     email: "admin@mirakare.com",
     avatar: "/avatars/admin.jpg",
   },
-  navMain: [
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const userRole = getUserRole()
+  
+  // Base navigation items available to all roles
+  const baseNavItems = [
     {
       title: "Dashboard",
       url: "/",
       icon: IconDashboard,
+      module: Module.DASHBOARD,
     },
+  ]
+
+  // Kare Admin specific navigation
+  const kareAdminNavItems = [
     {
       title: "Family Profile",
       url: "/family-profile",
       icon: IconId,
+      module: Module.FAMILY_PROFILE,
     },
     {
       title: "Kare Admins",
       url: "/kare-admins",
       icon: IconShieldCheck,
+      module: Module.KARE_ADMINS,
     },
     {
       title: "Kare Recipients",
       url: "/kare-recipients",
       icon: IconUserPlus,
+      module: Module.KARE_RECIPIENTS,
     },
     {
       title: "Kare Givers",
       url: "/kare-givers",
       icon: IconUsersGroup,
+      module: Module.KARE_GIVERS,
     },
     {
       title: "Kare Viewers",
       url: "/kare-viewers",
       icon: IconUserHeart,
+      module: Module.KARE_VIEWERS,
     },
     {
       title: "Contacts",
       url: "/contacts",
       icon: IconAddressBook,
+      module: Module.CONTACTS,
+    },
+  ]
+
+  // System Admin specific navigation
+  const systemAdminNavItems = [
+    {
+      title: "Subscribers",
+      url: "/subscribers",
+      icon: IconUsers,
+      module: Module.SUBSCRIBERS,
     },
     {
-      title: "Reports",
-      url: "/reports",
-      icon: IconTrendingUp,
+      title: "Packages",
+      url: "/packages",
+      icon: IconPackage,
+      module: Module.PACKAGES,
     },
-  ],
-  // System Admin specific modules
-  navMasters: {
+  ]
+
+  // Masters section for System Admin
+  const mastersSection = {
     title: "Masters",
     icon: IconDatabase,
     url: "#",
@@ -93,45 +126,53 @@ const data = {
       {
         title: "Vital Types",
         url: "/masters/vital-types",
+        module: Module.VITAL_TYPES,
       },
       {
         title: "Master Values",
         url: "/masters/master-values",
+        module: Module.MASTER_VALUES,
       },
+    ].filter(item => canAccessModule(item.module)),
+  }
+
+  // Reports section
+  const reportsSection = {
+    title: "Reports",
+    icon: IconTrendingUp,
+    url: "#",
+    items: [
+      {
+        title: "Vital Stats",
+        url: "/reports/vital-stats",
+      },
+      ...(isSystemAdmin() ? [
+        {
+          title: "Subscription Consumption",
+          url: "/reports/subscription-consumption",
+        }
+      ] : [])
     ],
-  },
-  navSystemAdmin: [
-    {
-      title: "Subscribers",
-      url: "/subscribers",
-      icon: IconUsers,
-    },
-    {
-      title: "Packages",
-      url: "/packages",
-      icon: IconPackage,
-    },
-  ],
-  // navReports: {
-  //   title: "Reports",
-  //   icon: IconChartLine,
-  //   url: "#",
-  //   items: [
-  //     {
-  //       title: "Vital Stats",
-  //       url: "/reports/vital-stats",
-  //     },
-  //     {
-  //       title: "Care Summary",
-  //       url: "/reports/care-summary",
-  //     },
-  //     {
-  //       title: "Activity Logs",
-  //       url: "/reports/activity-logs",
-  //     },
-  //   ],
-  // },
-  navSecondary: [
+  }
+
+  // Filter navigation items based on permissions
+  const getFilteredNavItems = () => {
+    let navItems = [...baseNavItems]
+
+    // Add Kare Admin items if user has access
+    if (isKareAdmin() || isSystemAdmin()) {
+      navItems = [...navItems, ...kareAdminNavItems.filter(item => canAccessModule(item.module))]
+    }
+
+    // Add System Admin items if user is System Admin
+    if (isSystemAdmin()) {
+      navItems = [...navItems, ...systemAdminNavItems.filter(item => canAccessModule(item.module))]
+    }
+
+    return navItems.filter(item => canAccessModule(item.module))
+  }
+
+  const navSecondary = [
     {
       title: "Settings",
       url: "/settings",
@@ -147,10 +188,10 @@ const data = {
       url: "/search",
       icon: IconSearch,
     },
-  ],
-}
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const filteredNavItems = getFilteredNavItems()
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -169,10 +210,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavReports report={data.navMasters} />
-        <NavMain items={data.navSystemAdmin} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* Main Navigation */}
+        <NavMain items={filteredNavItems} />
+        
+        {/* Masters Section - Only for System Admin */}
+        {isSystemAdmin() && mastersSection.items.length > 0 && (
+          <NavReports report={mastersSection} />
+        )}
+        
+        {/* Reports Section - Available to both System Admin and Kare Admin */}
+        {(isSystemAdmin() || isKareAdmin()) && canAccessModule(Module.REPORTS) && (
+          <NavReports report={reportsSection} />
+        )}
+        
+        {/* Secondary Navigation */}
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

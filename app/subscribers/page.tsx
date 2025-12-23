@@ -36,6 +36,8 @@ import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { useSubscribers, SUBSCRIBER_TYPES } from "@/lib/hooks/useSubscribers"
 import { Subscriber } from "@/lib/api/types"
+import { Module } from "@/lib/utils/permissions"
+import { usePermissions } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
 export default function SubscribersPage() {
@@ -46,6 +48,7 @@ export default function SubscribersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedSubscriber, setSelectedSubscriber] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
+  const { canCreate, canUpdate, canDelete } = usePermissions(Module.SUBSCRIBERS)
 
   const filteredSubscribers = (subscribers as Subscriber[]).filter((subscriber) => {
     const query = searchQuery.toLowerCase()
@@ -135,27 +138,31 @@ export default function SubscribersPage() {
       header: "Actions",
       cell: (row) => (
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/subscribers/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id.toString())
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
+          {canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/subscribers/edit/${row.id}`)
+              }}
+            >
+              <IconEdit className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDelete(row.id.toString())
+              }}
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <IconTrash className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -171,13 +178,15 @@ export default function SubscribersPage() {
             actions={
               <>
                 <ViewToggle view={view} onViewChange={setView} />
-                <Button
-                  onClick={() => router.push("/subscribers/add")}
-                  className="gap-2"
-                >
-                  <IconPlus className="h-4 w-4" />
-                  Register New
-                </Button>
+                {canCreate && (
+                  <Button
+                    onClick={() => router.push("/subscribers/add")}
+                    className="gap-2"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Register New
+                  </Button>
+                )}
               </>
             }
           />
@@ -291,6 +300,7 @@ export default function SubscribersPage() {
                 ]}
                 actions={
                   <ActionButtons
+                    module={Module.SUBSCRIBERS}
                     onEdit={() => router.push(`/subscribers/edit/${subscriber.id}`)}
                     onDelete={() => handleDelete(subscriber.id.toString())}
                   />
@@ -314,7 +324,7 @@ export default function SubscribersPage() {
                 : "Get started by registering a new subscriber"
             }
             action={
-              !searchQuery && !selectedType
+              !searchQuery && !selectedType && canCreate
                 ? {
                     label: "Register New Subscriber",
                     onClick: () => router.push("/subscribers/add"),

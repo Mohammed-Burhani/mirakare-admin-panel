@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Container from "@/components/layout/container"
+import { PermissionGuard } from "@/components/auth/PermissionGuard"
+import { Module } from "@/lib/utils/permissions"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -36,6 +38,7 @@ import { ProfileCard } from "@/components/profile-card"
 import { ActionButtons } from "@/components/action-buttons"
 import { usePackages, PACKAGE_TYPES } from "@/lib/hooks/usePackages"
 import { Package } from "@/lib/api/types"
+import { usePermissions } from "@/components/auth/PermissionGuard"
 import { toast } from "sonner"
 
 export default function PackagesPage() {
@@ -46,6 +49,7 @@ export default function PackagesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null)
   const [view, setView] = useState<"card" | "table">("card")
+  const { canCreate, canUpdate, canDelete } = usePermissions(Module.PACKAGES)
 
   const filteredPackages = (packages as Package[]).filter((pkg) => {
     const query = searchQuery.toLowerCase()
@@ -141,35 +145,40 @@ export default function PackagesPage() {
       header: "Actions",
       cell: (row) => (
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/packages/edit/${row.id}`)
-            }}
-          >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id.toString())
-            }}
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
+          {canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/packages/edit/${row.id}`)
+              }}
+            >
+              <IconEdit className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDelete(row.id.toString())
+              }}
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <IconTrash className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },
   ]
 
   return (
-    <Container>
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <PermissionGuard module={Module.PACKAGES}>
+      <Container>
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <FilterSection>
           <PageHeader
             title="Package List"
@@ -177,13 +186,15 @@ export default function PackagesPage() {
             actions={
               <>
                 <ViewToggle view={view} onViewChange={setView} />
-                <Button
-                  onClick={() => router.push("/packages/add")}
-                  className="gap-2"
-                >
-                  <IconPlus className="h-4 w-4" />
-                  Add New
-                </Button>
+                {canCreate && (
+                  <Button
+                    onClick={() => router.push("/packages/add")}
+                    className="gap-2"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Add New
+                  </Button>
+                )}
               </>
             }
           />
@@ -292,6 +303,7 @@ export default function PackagesPage() {
                 ]}
                 actions={
                   <ActionButtons
+                    module={Module.PACKAGES}
                     onEdit={() => router.push(`/packages/edit/${pkg.id}`)}
                     onDelete={() => handleDelete(pkg.id.toString())}
                   />
@@ -315,7 +327,7 @@ export default function PackagesPage() {
                 : "Get started by creating a new package"
             }
             action={
-              !searchQuery && !selectedType
+              !searchQuery && !selectedType && canCreate
                 ? {
                     label: "Create New Package",
                     onClick: () => router.push("/packages/add"),
@@ -336,5 +348,6 @@ export default function PackagesPage() {
         isDeleting={deletePackage.isPending}
       />
     </Container>
+    </PermissionGuard>
   )
 }
