@@ -18,6 +18,7 @@ import {
   IconUsers,
   IconPackage,
   IconBuilding,
+  IconUserCog,
 } from "@tabler/icons-react"
 import { NavMain } from "@/components/nav-main"
 import { NavReports } from "@/components/nav-reports"
@@ -151,6 +152,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ].filter(item => canAccessModule(item.module)),
   }
 
+  // Administration section for System Admin
+  const administrationSection = {
+    title: "Administration",
+    icon: IconUserCog,
+    url: "#",
+    items: [
+      {
+        title: "Roles",
+        url: "/administration/roles",
+        module: Module.ADMIN_ROLES,
+      },
+      {
+        title: "Users",
+        url: "/administration/users",
+        module: Module.ADMIN_USERS,
+      },
+    ].filter(item => canAccessModule(item.module)),
+  }
+
   // Reports section
   const reportsSection = {
     title: "Reports",
@@ -236,6 +256,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* Masters Section - Only for System Admin */}
         {isSystemAdmin() && mastersSection.items.length > 0 && (
           <NavReports report={mastersSection} />
+        )}
+        
+        {/* Administration Section - Only for System Admin */}
+        {isSystemAdmin() && administrationSection.items.length > 0 && (
+          <NavReports report={administrationSection} />
         )}
         
         {/* Reports Section - Available to System Admin, Kare Admin, and Org Admin */}

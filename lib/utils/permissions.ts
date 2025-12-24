@@ -45,6 +45,8 @@ export enum Module {
   SUBSCRIBERS = 'subscribers',
   PACKAGES = 'packages',
   ADMINISTRATIONS = 'administrations',
+  ADMIN_ROLES = 'admin-roles',
+  ADMIN_USERS = 'admin-users',
 }
 
 // =============================================================================
@@ -69,6 +71,8 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     [Module.KARE_RECIPIENTS]: [Permission.READ],
     [Module.REPORTS]: [Permission.READ],
     [Module.ADMINISTRATIONS]: [Permission.READ],
+    [Module.ADMIN_ROLES]: [Permission.READ],
+    [Module.ADMIN_USERS]: [Permission.READ],
   },
   [UserRole.ORG_ADMIN]: {
     [Module.DASHBOARD]: [Permission.READ],

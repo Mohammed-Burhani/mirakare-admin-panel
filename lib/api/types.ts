@@ -1186,3 +1186,62 @@ export interface OrganizationProfileUpdateRequest {
   deleted: boolean
   isActive: boolean
 }
+
+/**
+ * Administration User interface - based on subscriber list API response
+ */
+export interface AdminUser {
+  id: number
+  name: string
+  type: string
+  orgPhone: string | null
+  mobile: string
+  email: string
+  address: string
+  createdDate: string
+  isActive: boolean
+}
+
+/**
+ * Administration Role interface - will use same API but different presentation
+ */
+export interface AdminRole {
+  id: number
+  name: string
+  type: string
+  orgPhone: string | null
+  mobile: string
+  email: string
+  address: string
+  createdDate: string
+  isActive: boolean
+}
+/**
+ * Vital Stats Data interface
+ */
+export interface VitalStatsData {
+  id: number
+  date: string
+  time?: string
+  value: number | string
+  unit?: string
+  source?: string
+  recipientId?: number
+  vitalTypeId?: number
+  // Blood pressure specific fields
+  systolic?: number
+  diastolic?: number
+  // Additional fields for different vital types
+  notes?: string
+  deviceId?: string
+}
+
+/**
+ * Vital Stats Request payload
+ */
+export interface VitalStatsRequest {
+  vitalType?: string
+  recipientId?: string
+  startDate: string
+  endDate: string
+}

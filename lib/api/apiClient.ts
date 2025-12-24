@@ -27,7 +27,11 @@ import {
   CreateVitalTypeRequest,
   UpdateVitalTypeRequest,
   OrganizationProfile,
-  OrganizationProfileUpdateRequest
+  OrganizationProfileUpdateRequest,
+  AdminUser,
+  AdminRole,
+  VitalStatsData,
+  VitalStatsRequest
 } from './types'
 
 // Export httpClient methods directly
@@ -377,5 +381,128 @@ export const apiClient = Object.assign(httpClient, {
   updateOrganizationProfile: async (profile: OrganizationProfileUpdateRequest): Promise<OrganizationProfile> => {
     const response = await httpClient.post<OrganizationProfile>('/subscriber/profile/update', profile)
     return response.data
+  },
+
+  // Administration
+  getAdminUsers: async (): Promise<AdminUser[]> => {
+    const response = await httpClient.post<AdminUser[]>('/subscriber/list', { type: null })
+    return response.data
+  },
+
+  getAdminRoles: async (): Promise<AdminRole[]> => {
+    const response = await httpClient.post<AdminRole[]>('/subscriber/list', { type: null })
+    return response.data
+  },
+
+  // Vital Stats
+  getVitalStats: async (params: VitalStatsRequest): Promise<VitalStatsData[]> => {
+    // TODO: Replace with actual API endpoint when available
+    // For now, return mock data for testing
+    const mockData: VitalStatsData[] = [
+      {
+        id: 1,
+        date: '2024-12-17',
+        time: '08:00',
+        value: 120,
+        unit: 'mmHg',
+        source: 'Manual',
+        systolic: 120,
+        diastolic: 80,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Morning reading'
+      },
+      {
+        id: 2,
+        date: '2024-12-18',
+        time: '08:15',
+        value: 118,
+        unit: 'mmHg',
+        source: 'Device',
+        systolic: 118,
+        diastolic: 78,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Good reading'
+      },
+      {
+        id: 3,
+        date: '2024-12-19',
+        time: '08:30',
+        value: 122,
+        unit: 'mmHg',
+        source: 'Manual',
+        systolic: 122,
+        diastolic: 82,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Slightly elevated'
+      },
+      {
+        id: 4,
+        date: '2024-12-20',
+        time: '08:00',
+        value: 119,
+        unit: 'mmHg',
+        source: 'Device',
+        systolic: 119,
+        diastolic: 79,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Normal range'
+      },
+      {
+        id: 5,
+        date: '2024-12-21',
+        time: '08:45',
+        value: 121,
+        unit: 'mmHg',
+        source: 'Manual',
+        systolic: 121,
+        diastolic: 81,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Stable reading'
+      },
+      {
+        id: 6,
+        date: '2024-12-22',
+        time: '08:20',
+        value: 117,
+        unit: 'mmHg',
+        source: 'Device',
+        systolic: 117,
+        diastolic: 77,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Good control'
+      },
+      {
+        id: 7,
+        date: '2024-12-23',
+        time: '08:10',
+        value: 123,
+        unit: 'mmHg',
+        source: 'Manual',
+        systolic: 123,
+        diastolic: 83,
+        recipientId: 1,
+        vitalTypeId: 1,
+        notes: 'Monitor closely'
+      }
+    ]
+
+    // Filter by date range
+    const filteredData = mockData.filter(item => {
+      const itemDate = new Date(item.date)
+      const start = new Date(params.startDate)
+      const end = new Date(params.endDate)
+      return itemDate >= start && itemDate <= end
+    })
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    return filteredData
   },
 })
