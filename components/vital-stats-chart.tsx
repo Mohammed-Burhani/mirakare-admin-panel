@@ -22,11 +22,14 @@ interface VitalStatsChartProps {
 }
 
 // Custom tooltip component defined outside render
-function CustomTooltip({ active, payload, label }: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CustomTooltip(props: any) {
+  const { active, payload, label } = props
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border rounded-lg shadow-lg">
         <p className="font-medium">{`Date: ${label}`}</p>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }}>
             {`${entry.dataKey}: ${entry.value}${entry.payload.unit ? ` ${entry.payload.unit}` : ''}`}
@@ -40,13 +43,17 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export function VitalStatsChart({ data, vitalType }: VitalStatsChartProps) {
   const chartData = useMemo(() => {
-    return data.map((item) => ({
-      date: new Date(item.date).toLocaleDateString(),
-      value: typeof item.value === 'string' ? parseFloat(item.value) : item.value,
-      systolic: item.systolic,
-      diastolic: item.diastolic,
-      unit: item.unit,
-    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return data.map((item) => {
+      const timestamp = new Date(item.timestamp)
+      return {
+        date: timestamp.toLocaleDateString(),
+        value: item.systolic || item.diastolic || 0,
+        systolic: item.systolic,
+        diastolic: item.diastolic,
+        unit: item.unit,
+        timestamp: item.timestamp,
+      }
+    }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
   }, [data])
 
   const getChartColor = (vitalType: string) => {
@@ -63,7 +70,7 @@ export function VitalStatsChart({ data, vitalType }: VitalStatsChartProps) {
   const color = getChartColor(vitalType)
 
   // Blood pressure chart (dual line)
-  if (vitalType.toLowerCase().includes('blood pressure')) {
+  if (vitalType.toLowerCase().includes('blood') || vitalType.toLowerCase().includes('pressure')) {
     return (
       <div className="h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">

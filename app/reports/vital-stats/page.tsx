@@ -69,10 +69,10 @@ function VitalStatsPageContent() {
     error: statsError,
     refetch: refetchStats 
   } = useVitalStats({
-    vitalType: selectedVital,
+    vitalName: selectedVital,
     recipientId: selectedRecipient,
-    startDate,
-    endDate,
+    fromDate: startDate,
+    toDate: endDate,
     enabled: !!(selectedVital && startDate && endDate)
   })
 
@@ -100,22 +100,27 @@ function VitalStatsPageContent() {
     }
 
     // Prepare data for export
-    const exportData = vitalStatsData.map((item: VitalStatsData) => ({
-      Date: new Date(item.date).toLocaleDateString(),
-      Time: item.time || 'N/A',
-      Value: `${item.value} ${item.unit || ''}`,
-      Systolic: item.systolic || 'N/A',
-      Diastolic: item.diastolic || 'N/A',
-      Source: item.source || 'Manual',
-      Notes: item.notes || 'N/A'
-    }))
+    const exportData = vitalStatsData.map((item: VitalStatsData) => {
+      const timestamp = new Date(item.timestamp)
+      return {
+        Date: timestamp.toLocaleDateString(),
+        Time: timestamp.toLocaleTimeString(),
+        'Systolic': item.systolic || 'N/A',
+        'Diastolic': item.diastolic || 'N/A',
+        'Unit': item.unit || 'N/A',
+        'Source': item.source || 'Manual',
+        'User ID': item.user_id,
+        'Created By': item.createdBy,
+        'Timezone Offset': item.timezone_offset
+      }
+    })
 
     // Convert to CSV format
     const headers = Object.keys(exportData[0])
     const csvContent = [
       headers.join(','),
-      ...exportData.map((row: any) => 
-        headers.map(header => `"${row[header as keyof typeof row]}"`).join(',')
+      ...exportData.map((row: Record<string, string | number>) => 
+        headers.map(header => `"${row[header]}"`).join(',')
       )
     ].join('\n')
 
@@ -133,48 +138,45 @@ function VitalStatsPageContent() {
 
   // Dynamic columns based on vital type
   const getColumns = (): ColumnDef<VitalStatsData>[] => {
-    const baseColumns: ColumnDef<VitalStatsData>[] = [
+    return [
       {
-        accessorKey: "date",
-        header: "Date",
-        cell: (row) => new Date(row.date).toLocaleDateString(),
+        accessorKey: "timestamp",
+        header: "Date & Time",
+        cell: (row) => {
+          const timestamp = row.timestamp
+          const date = new Date(timestamp)
+          return (
+            <div className="space-y-1">
+              <div className="font-medium">{date.toLocaleDateString()}</div>
+              <div className="text-sm text-muted-foreground">{date.toLocaleTimeString()}</div>
+            </div>
+          )
+        },
       },
       {
-        accessorKey: "time",
-        header: "Time",
-        cell: (row) => row.time || "N/A",
+        accessorKey: "systolic",
+        header: "Systolic",
+        cell: (row) => `${row.systolic || 'N/A'} ${row.unit || ''}`,
       },
       {
-        accessorKey: "value",
-        header: "Value",
-        cell: (row) => `${row.value} ${row.unit || ""}`,
+        accessorKey: "diastolic", 
+        header: "Diastolic",
+        cell: (row) => `${row.diastolic || 'N/A'} ${row.unit || ''}`,
       },
       {
         accessorKey: "source",
         header: "Source",
         cell: (row) => row.source || "Manual",
       },
+      {
+        accessorKey: "user_id",
+        header: "User ID",
+        cell: (row) => {
+          const userId = row.user_id
+          return userId.substring(0, 8) + "..." // Show first 8 characters
+        },
+      },
     ]
-
-    // Add specific columns based on vital type
-    if (selectedVital?.toLowerCase().includes('blood pressure')) {
-      return [
-        ...baseColumns.slice(0, 2),
-        {
-          accessorKey: "systolic",
-          header: "Systolic",
-          cell: (row) => row.systolic || "N/A",
-        },
-        {
-          accessorKey: "diastolic", 
-          header: "Diastolic",
-          cell: (row) => row.diastolic || "N/A",
-        },
-        ...baseColumns.slice(3),
-      ]
-    }
-
-    return baseColumns
   }
 
   const isLoading = loadingVitals || loadingRecipients || loadingStats
@@ -211,7 +213,7 @@ function VitalStatsPageContent() {
                   </SelectTrigger>
                   <SelectContent>
                     {vitalTypes.map((vital) => (
-                      <SelectItem key={vital.id} value={vital.id.toString()}>
+                      <SelectItem key={vital.id} value={vital.name.toLowerCase().replace(/\s+/g, '')}>
                         {vital.name}
                       </SelectItem>
                     ))}

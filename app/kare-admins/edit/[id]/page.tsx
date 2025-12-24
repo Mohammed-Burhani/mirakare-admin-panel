@@ -35,18 +35,18 @@ function EditKareAdminContent({ params }: { params: Promise<{ id: string }> }) {
   // Map API response fields to form field names
   const initialValues = {
     id: admin.id,
-    firstName: admin.fname || '',
-    middleName: admin.mname || '',
-    lastName: admin.lname || '',
+    firstName: admin.name ? admin.name.split(' ')[0] || '' : '',
+    middleName: '',
+    lastName: admin.name ? admin.name.split(' ').slice(1).join(' ') || '' : '',
     mobile: admin.mobile || '',
     email: admin.email || '',
-    addressLine1: admin.address1 || '',
-    addressLine2: admin.address2 || '',
-    city: admin.city || '',
-    state: admin.state || '',
-    zipCode: admin.zipcode || '',
-    country: admin.country || 'United States',
-    notes: admin.notes || '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'United States',
+    notes: '',
   }
 
   return (

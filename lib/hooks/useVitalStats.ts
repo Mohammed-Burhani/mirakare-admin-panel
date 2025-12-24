@@ -15,7 +15,11 @@ export const vitalStatsQueryKeys = {
 // VITAL STATS QUERIES
 // =============================================================================
 
-interface UseVitalStatsParams extends VitalStatsRequest {
+interface UseVitalStatsParams {
+  vitalName?: string
+  recipientId?: string
+  fromDate: string
+  toDate: string
   enabled?: boolean
 }
 
@@ -24,17 +28,17 @@ interface UseVitalStatsParams extends VitalStatsRequest {
  * Fetches vital statistics data based on filters
  */
 export const useVitalStats = ({ 
-  vitalType, 
+  vitalName, 
   recipientId, 
-  startDate, 
-  endDate, 
+  fromDate, 
+  toDate, 
   enabled = true 
 }: UseVitalStatsParams) => {
   const params: VitalStatsRequest = {
-    vitalType,
-    recipientId,
-    startDate,
-    endDate,
+    vitalName: vitalName || '',
+    recipientId: recipientId || '',
+    fromDate,
+    toDate,
   }
 
   return useQuery({
@@ -42,7 +46,7 @@ export const useVitalStats = ({
     queryFn: async (): Promise<VitalStatsData[]> => {
       return await apiClient.getVitalStats(params)
     },
-    enabled: enabled && !!(startDate && endDate),
+    enabled: enabled && !!(fromDate && toDate && vitalName),
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: 1
   })

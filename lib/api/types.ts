@@ -594,30 +594,15 @@ export interface ContactFilterParams {
  */
 export interface KareAdmin {
   id: number
-  fname: string
-  mname: string | null
-  lname: string
+  recipientId: number
+  recipient: any | null
+  name: string
   email: string
   mobile: string
-  address1: string | null
-  address2: string | null
-  city: string | null
-  state: string | null
-  zipcode: string | null
-  country: string | null
-  notes: string | null
-  roleId: number
-  userName: string
-  subscriberId: number
-  profileImage: string | null
-  refreshToken: string | null
-  refreshTokenExpiry: string | null
-  relationship: number
-  recipientId: number
-  additionalRoleId: number | null
-  forcePwdChange: boolean
+  subscriber: string
   createdDate: string
-  modifiedDate: string
+  additionalRole: any | null
+}
   createdBy: number
   modifiedBy: number
   subscriptionType: string | null
@@ -717,18 +702,9 @@ export interface KareRecipient {
  */
 export interface CreateKareAdminRequest {
   id: number
-  fname: string
-  mname: string
-  lname: string
+  name: string
   email: string
   mobile: string
-  address1: string
-  address2: string
-  city: string
-  state: string
-  zipcode: string
-  country: string
-  notes: string
   recipientId: number
   relationship: number
 }
@@ -1217,31 +1193,33 @@ export interface AdminRole {
   isActive: boolean
 }
 /**
- * Vital Stats Data interface
+ * Vital Stats Data interface - based on actual API response
  */
 export interface VitalStatsData {
-  id: number
-  date: string
-  time?: string
-  value: number | string
-  unit?: string
-  source?: string
-  recipientId?: number
-  vitalTypeId?: number
-  // Blood pressure specific fields
-  systolic?: number
+  id: string
+  user_id: string
+  timestamp: string
+  timezone_offset: number
+  type: string | null
+  unit: string
   diastolic?: number
-  // Additional fields for different vital types
-  notes?: string
-  deviceId?: string
+  systolic?: number
+  source: string
+  createdBy: string
+  modifiedBy: string | null
+  deleted: boolean
+  // Computed fields for display
+  date?: string
+  time?: string
+  value?: number | string
 }
 
 /**
- * Vital Stats Request payload
+ * Vital Stats Request payload - based on actual API structure
  */
 export interface VitalStatsRequest {
-  vitalType?: string
-  recipientId?: string
-  startDate: string
-  endDate: string
+  vitalName: string
+  recipientId: string
+  fromDate: string
+  toDate: string
 }

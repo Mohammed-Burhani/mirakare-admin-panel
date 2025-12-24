@@ -48,11 +48,11 @@ function KareAdminsPageContent() {
 
   const filteredAdmins = admins.filter((admin: KareAdmin) => {
     const query = searchQuery.toLowerCase()
-    const name = `${admin.fname} ${admin.lname}`.trim()
     return (
-      (name && name.toLowerCase().includes(query)) ||
+      (admin.name && admin.name.toLowerCase().includes(query)) ||
       (admin.email && admin.email.toLowerCase().includes(query)) ||
-      (admin.mobile && admin.mobile.includes(query))
+      (admin.mobile && admin.mobile.includes(query)) ||
+      (admin.subscriber && admin.subscriber.toLowerCase().includes(query))
     )
   })
 
@@ -77,11 +77,11 @@ function KareAdminsPageContent() {
 
   const columns: ColumnDef<KareAdmin>[] = [
     {
-      accessorKey: "fname",
+      accessorKey: "name",
       header: "Name",
       cell: (row) => (
         <div className="font-medium">
-          {`${row.fname} ${row.lname}`.trim()}
+          {row.name}
         </div>
       ),
     },
@@ -94,19 +94,19 @@ function KareAdminsPageContent() {
       header: "Mobile",
     },
     {
-      accessorKey: "subscriberId",
-      header: "Subscriber ID",
+      accessorKey: "subscriber",
+      header: "Subscriber",
     },
     {
       accessorKey: "recipientId",
       header: "Recipient ID",
     },
     {
-      accessorKey: "additionalRoleId",
+      accessorKey: "additionalRole",
       header: "Additional Role",
       cell: (row) => (
-        <Badge variant={row.additionalRoleId ? "default" : "secondary"}>
-          {row.additionalRoleId || 'None'}
+        <Badge variant={row.additionalRole ? "default" : "secondary"}>
+          {row.additionalRole || 'None'}
         </Badge>
       ),
     },
@@ -175,16 +175,16 @@ function KareAdminsPageContent() {
               <ProfileCard
                 key={admin.id}
                 icon={<IconShieldCheck className="text-primary h-8 w-8" />}
-                title={`${admin.fname} ${admin.lname}`.trim()}
+                title={admin.name}
                 subtitle={
                   <div className="flex items-center gap-1">
                     <IconUser className="h-4 w-4" />
-                    <span>Subscriber ID: {admin.subscriberId}</span>
+                    <span>Subscriber: {admin.subscriber}</span>
                   </div>
                 }
                 badge={{
-                  label: admin.additionalRoleId ? `Role: ${admin.additionalRoleId}` : 'Admin',
-                  variant: admin.additionalRoleId ? "default" : "secondary",
+                  label: admin.additionalRole ? `Role: ${admin.additionalRole}` : 'Admin',
+                  variant: admin.additionalRole ? "default" : "secondary",
                 }}
                 contactInfo={[
                   {
