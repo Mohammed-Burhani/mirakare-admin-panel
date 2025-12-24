@@ -1126,3 +1126,63 @@ export interface UpdateVitalTypeRequest {
   isManual: boolean
   createdDate: string
 }
+
+// =============================================================================
+// ORGANIZATION PROFILE TYPES
+// =============================================================================
+
+/**
+ * Organization Profile interface - based on actual API response structure
+ */
+export interface OrganizationProfile {
+  id: number
+  fname: string
+  mname: string
+  lname: string
+  type: string
+  contactPersonFName: string
+  contactPersonMName: string
+  contactPersonLName: string
+  mobile: string
+  orgPhone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  websiteUrl: string
+  notes: string
+  modifiedDate: string
+  deleted: boolean
+  isActive: boolean
+}
+
+/**
+ * Organization Profile update request payload
+ */
+export interface OrganizationProfileUpdateRequest {
+  id: number
+  fname: string
+  mname: string
+  lname: string
+  type: string
+  contactPersonFName: string
+  contactPersonMName: string
+  contactPersonLName: string
+  mobile: string
+  orgPhone: string
+  email: string
+  address1: string
+  address2: string
+  city: string
+  state: string
+  zipcode: string
+  country: string
+  websiteUrl: string
+  notes: string
+  modifiedDate: string
+  deleted: boolean
+  isActive: boolean
+}

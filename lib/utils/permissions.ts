@@ -7,6 +7,7 @@
 
 export enum UserRole {
   SYSTEM_ADMIN = 'System Admin',
+  ORG_ADMIN = 'Org Admin',
   KARE_ADMIN = 'Kare Admin',
   KARE_GIVER = 'Kare Giver',
   KARE_VIEWER = 'Kare Viewer',
@@ -31,6 +32,7 @@ export enum Permission {
 
 export enum Module {
   DASHBOARD = 'dashboard',
+  ORGANIZATION_PROFILE = 'organization-profile',
   FAMILY_PROFILE = 'family-profile',
   KARE_ADMINS = 'kare-admins',
   KARE_RECIPIENTS = 'kare-recipients',
@@ -67,6 +69,12 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     [Module.KARE_RECIPIENTS]: [Permission.READ],
     [Module.REPORTS]: [Permission.READ],
     [Module.ADMINISTRATIONS]: [Permission.READ],
+  },
+  [UserRole.ORG_ADMIN]: {
+    [Module.DASHBOARD]: [Permission.READ],
+    [Module.ORGANIZATION_PROFILE]: [Permission.ALL],
+    [Module.KARE_ADMINS]: [Permission.ALL],
+    [Module.REPORTS]: [Permission.READ],
   },
   [UserRole.KARE_ADMIN]: {
     [Module.DASHBOARD]: [Permission.READ],
@@ -172,6 +180,13 @@ export function getAccessibleModules(): Module[] {
   if (!rolePermissions) return []
 
   return Object.keys(rolePermissions) as Module[]
+}
+
+/**
+ * Check if current user is Org Admin
+ */
+export function isOrgAdmin(): boolean {
+  return getUserRole() === UserRole.ORG_ADMIN
 }
 
 /**

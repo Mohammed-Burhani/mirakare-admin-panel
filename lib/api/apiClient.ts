@@ -25,7 +25,9 @@ import {
   UpdatePackageRequest,
   VitalTypeEntity,
   CreateVitalTypeRequest,
-  UpdateVitalTypeRequest
+  UpdateVitalTypeRequest,
+  OrganizationProfile,
+  OrganizationProfileUpdateRequest
 } from './types'
 
 // Export httpClient methods directly
@@ -364,5 +366,16 @@ export const apiClient = Object.assign(httpClient, {
   getActivePackages: async (): Promise<Package[]> => {
     const response = await httpClient.post<Package[]>('/package/active/list', {})
     return response.data || []
+  },
+
+  // Organization Profile
+  getOrganizationProfile: async (): Promise<OrganizationProfile> => {
+    const response = await httpClient.get<OrganizationProfile>('/subscriber/profile')
+    return response.data
+  },
+
+  updateOrganizationProfile: async (profile: OrganizationProfileUpdateRequest): Promise<OrganizationProfile> => {
+    const response = await httpClient.post<OrganizationProfile>('/subscriber/profile/update', profile)
+    return response.data
   },
 })

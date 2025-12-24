@@ -17,6 +17,7 @@ import {
   IconDatabase,
   IconUsers,
   IconPackage,
+  IconBuilding,
 } from "@tabler/icons-react"
 import { NavMain } from "@/components/nav-main"
 import { NavReports } from "@/components/nav-reports"
@@ -37,7 +38,7 @@ import {
   Module, 
   isSystemAdmin, 
   isKareAdmin,
-  getUserRole 
+  isOrgAdmin
 } from "@/lib/utils/permissions"
 
 const data = {
@@ -49,8 +50,6 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const userRole = getUserRole()
-  
   // Base navigation items available to all roles
   const baseNavItems = [
     {
@@ -58,6 +57,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/",
       icon: IconDashboard,
       module: Module.DASHBOARD,
+    },
+  ]
+
+  // Org Admin specific navigation
+  const orgAdminNavItems = [
+    {
+      title: "Organization Profile",
+      url: "/organization-profile",
+      icon: IconBuilding,
+      module: Module.ORGANIZATION_PROFILE,
+    },
+    {
+      title: "Kare Admins",
+      url: "/kare-admins",
+      icon: IconShieldCheck,
+      module: Module.KARE_ADMINS,
     },
   ]
 
@@ -159,6 +174,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const getFilteredNavItems = () => {
     let navItems = [...baseNavItems]
 
+    // Add Org Admin items if user is Org Admin
+    if (isOrgAdmin()) {
+      navItems = [...navItems, ...orgAdminNavItems.filter(item => canAccessModule(item.module))]
+    }
+
     // Add Kare Admin items if user has access
     if (isKareAdmin() || isSystemAdmin()) {
       navItems = [...navItems, ...kareAdminNavItems.filter(item => canAccessModule(item.module))]
@@ -218,8 +238,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavReports report={mastersSection} />
         )}
         
-        {/* Reports Section - Available to both System Admin and Kare Admin */}
-        {(isSystemAdmin() || isKareAdmin()) && canAccessModule(Module.REPORTS) && (
+        {/* Reports Section - Available to System Admin, Kare Admin, and Org Admin */}
+        {(isSystemAdmin() || isKareAdmin() || isOrgAdmin()) && canAccessModule(Module.REPORTS) && (
           <NavReports report={reportsSection} />
         )}
         
