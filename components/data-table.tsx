@@ -48,7 +48,7 @@ export function DataTable<T extends { id: number | string }>({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-white px-2">
         <Table>
           <TableHeader>
             <TableRow>

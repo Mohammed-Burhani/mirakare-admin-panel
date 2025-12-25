@@ -15,7 +15,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         variant={view === "card" ? "secondary" : "ghost"}
         size="sm"
         onClick={() => onViewChange("card")}
-        className="gap-2"
+        className="gap-2 min-h-2! xl:min-h-auto"
       >
         <IconLayoutGrid className="h-4 w-4" />
         Card
@@ -24,7 +24,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         variant={view === "table" ? "secondary" : "ghost"}
         size="sm"
         onClick={() => onViewChange("table")}
-        className="gap-2"
+        className="gap-2 min-h-2! xl:min-h-auto"
       >
         <IconTable className="h-4 w-4" />
         Table

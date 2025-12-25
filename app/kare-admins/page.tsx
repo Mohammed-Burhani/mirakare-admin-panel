@@ -104,11 +104,14 @@ function KareAdminsPageContent() {
     {
       accessorKey: "additionalRole",
       header: "Additional Role",
-      cell: (row) => (
-        <Badge variant={row.additionalRole ? "default" : "secondary"}>
-          {row.additionalRole || 'None'}
-        </Badge>
-      ),
+      cell: (row) => {
+        const role = row.additionalRole && typeof row.additionalRole === 'string' ? row.additionalRole : "None"
+        return (
+          <Badge variant={row.additionalRole ? "default" : "secondary"}>
+            {role}
+          </Badge>
+        )
+      },
     },
     {
       accessorKey: "createdDate",
