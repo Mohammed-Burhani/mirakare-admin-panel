@@ -17,8 +17,6 @@ import {
   IconUser,
   IconPhone,
   IconMail,
-  IconMapPin,
-  IconNotes,
 } from "@tabler/icons-react"
 import { useKareAdmins } from "@/lib/hooks/useKareAdmins"
 import { toast } from "sonner"
@@ -38,15 +36,6 @@ const validationSchema = Yup.object({
   email: Yup.string()
     .required("Email is required")
     .email("Invalid email address"),
-  addressLine1: Yup.string().required("Address line 1 is required"),
-  addressLine2: Yup.string(),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  zipCode: Yup.string()
-    .required("Zip code is required")
-    .matches(/^[0-9]{5}$/, "Zip code must be 5 digits"),
-  country: Yup.string().required("Country is required"),
-  notes: Yup.string(),
 })
 
 interface KareAdminFormProps {
@@ -57,13 +46,6 @@ interface KareAdminFormProps {
     lastName: string
     mobile: string
     email: string
-    addressLine1: string
-    addressLine2: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-    notes: string
   }
 }
 
@@ -73,13 +55,6 @@ const defaultValues = {
   lastName: "",
   mobile: "",
   email: "",
-  addressLine1: "",
-  addressLine2: "",
-  city: "",
-  state: "",
-  zipCode: "",
-  country: "United States",
-  notes: "",
 }
 
 export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
@@ -91,18 +66,9 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
       if (mode === "add") {
         const adminData = {
           id: 0,
-          fname: values.firstName,
-          mname: values.middleName || "",
-          lname: values.lastName,
+          name: `${values.firstName} ${values.middleName} ${values.lastName}`.replace(/\s+/g, ' ').trim(),
           email: values.email,
           mobile: values.mobile,
-          address1: values.addressLine1 || "",
-          address2: values.addressLine2 || "",
-          city: values.city || "",
-          state: values.state || "",
-          zipcode: values.zipCode || "",
-          country: values.country || "United States",
-          notes: values.notes || "",
           recipientId: 0,
           relationship: 0
         }
@@ -112,18 +78,9 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
         const id = (initialValues as any)?.id
         if (id) {
           const adminData = {
-            fname: values.firstName,
-            mname: values.middleName || "",
-            lname: values.lastName,
-            email: values.email ,
+            name: `${values.firstName} ${values.middleName} ${values.lastName}`.replace(/\s+/g, ' ').trim(),
+            email: values.email,
             mobile: values.mobile,
-            address1: values.addressLine1 || "",
-            address2: values.addressLine2 || "",
-            city: values.city || "",
-            state: values.state || "",
-            zipcode: values.zipCode || "",
-            country: values.country || "United States",
-            notes: values.notes || "",
             recipientId: 0,
             relationship: 0
           }
@@ -275,133 +232,6 @@ export function KareAdminForm({ mode, initialValues }: KareAdminFormProps) {
                           className="text-destructive text-sm"
                         />
                       </div>
-                    </div>
-                  ),
-                },
-                {
-                  id: "address",
-                  title: "Address",
-                  icon: IconMapPin,
-                  description: "Physical location details",
-                  defaultOpen: true,
-                  content: (
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="addressLine1">
-                          Address Line 1{" "}
-                          <span className="text-destructive">*</span>
-                        </Label>
-                        <Field
-                          name="addressLine1"
-                          type="text"
-                          placeholder="Address Line 1"
-                          className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <ErrorMessage
-                          name="addressLine1"
-                          component="p"
-                          className="text-destructive text-sm"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="addressLine2">Address Line 2</Label>
-                        <Field
-                          name="addressLine2"
-                          type="text"
-                          placeholder="Address Line 2"
-                          className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city">
-                            City <span className="text-destructive">*</span>
-                          </Label>
-                          <Field
-                            name="city"
-                            type="text"
-                            placeholder="City"
-                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
-                          <ErrorMessage
-                            name="city"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="state">
-                            State <span className="text-destructive">*</span>
-                          </Label>
-                          <Field
-                            name="state"
-                            type="text"
-                            placeholder="State"
-                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
-                          <ErrorMessage
-                            name="state"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="zipCode">
-                            Zipcode <span className="text-destructive">*</span>
-                          </Label>
-                          <Field
-                            name="zipCode"
-                            type="text"
-                            placeholder="Zipcode"
-                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
-                          <ErrorMessage
-                            name="zipCode"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="country">
-                            Country <span className="text-destructive">*</span>
-                          </Label>
-                          <Field
-                            name="country"
-                            type="text"
-                            placeholder="Country"
-                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
-                          <ErrorMessage
-                            name="country"
-                            component="p"
-                            className="text-destructive text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  id: "notes",
-                  title: "Notes",
-                  icon: IconNotes,
-                  description: "Additional information and comments",
-                  defaultOpen: false,
-                  content: (
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Additional Information</Label>
-                      <Field
-                        as="textarea"
-                        name="notes"
-                        placeholder="Add any additional notes or information..."
-                        rows={4}
-                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
                     </div>
                   ),
                 },

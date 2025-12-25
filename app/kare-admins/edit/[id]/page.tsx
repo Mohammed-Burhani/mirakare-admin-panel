@@ -40,13 +40,6 @@ function EditKareAdminContent({ params }: { params: Promise<{ id: string }> }) {
     lastName: admin.name ? admin.name.split(' ').slice(1).join(' ') || '' : '',
     mobile: admin.mobile || '',
     email: admin.email || '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    notes: '',
   }
 
   return (

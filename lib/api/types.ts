@@ -595,18 +595,13 @@ export interface ContactFilterParams {
 export interface KareAdmin {
   id: number
   recipientId: number
-  recipient: any | null
+  recipient: unknown | null
   name: string
   email: string
   mobile: string
   subscriber: string
   createdDate: string
-  additionalRole: any | null
-}
-  createdBy: number
-  modifiedBy: number
-  subscriptionType: string | null
-  deleted: boolean
+  additionalRole: unknown | null
 }
 
 /**
@@ -1222,4 +1217,29 @@ export interface VitalStatsRequest {
   recipientId: string
   fromDate: string
   toDate: string
+}
+
+// =============================================================================
+// SUBSCRIPTION CONSUMPTION TYPES
+// =============================================================================
+
+/**
+ * Subscription Consumption Data interface - based on actual API response
+ */
+export interface SubscriptionConsumptionData {
+  id: string | number
+  name: string
+  type: string
+  planName: string
+  isActive: boolean
+  startDate: string
+  endDate: string
+  totalAvailFamilies: number
+  totalUsedFamilies: number
+  totalAvailReceivers: number
+  totalUsedReceivers: number
+  totalAvailGivers: number
+  totalUsedGivers: number
+  totalAvailViewers: number
+  totalUsedViewers: number
 }

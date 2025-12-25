@@ -31,7 +31,8 @@ import {
   AdminUser,
   AdminRole,
   VitalStatsData,
-  VitalStatsRequest
+  VitalStatsRequest,
+  SubscriptionConsumptionData
 } from './types'
 
 // Export httpClient methods directly
@@ -404,6 +405,19 @@ export const apiClient = Object.assign(httpClient, {
       date: item.timestamp.split('T')[0], // Extract date from timestamp
       time: item.timestamp.split('T')[1]?.split('.')[0] || '', // Extract time from timestamp
       value: item.systolic && item.diastolic ? `${item.systolic}/${item.diastolic}` : item.systolic || item.diastolic || 'N/A'
+    }))
+    
+    return transformedData
+  },
+
+  // Subscription Consumption
+  getSubscriptionConsumption: async (): Promise<SubscriptionConsumptionData[]> => {
+    const response = await httpClient.post<SubscriptionConsumptionData[]>('/report/subscription-consumed', {})
+    
+    // Add id field for DataTable compatibility
+    const transformedData = (response.data || []).map((item, index) => ({
+      ...item,
+      id: `${item.name}-${index}` // Create unique id from name and index
     }))
     
     return transformedData
